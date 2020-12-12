@@ -1,0 +1,7 @@
+assets.cpp:
+    assets/spritesheet.png:
+        name: spritesheet
+    assets/tile-sheet1.png:
+        name: tile_sheet_1
+    assets/maps/map1.tmx:
+        name: map1  
