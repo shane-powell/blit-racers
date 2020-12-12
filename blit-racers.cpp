@@ -1,6 +1,7 @@
 #include "blit-racers.hpp"
 #include "assets.hpp"
 #include <limits>
+#include <algorithm>
 
 using namespace blit;
 
@@ -20,7 +21,7 @@ public:
 	float x = 0.0f;
 	float y = 0.0f;
 
-	float degrees = 90.0f;
+	float degrees = 270.0f;
 
 	Actor() = default;
 
@@ -117,6 +118,7 @@ const uint32_t tilemap_width = 32;
 const uint32_t tilemap_height = 64;
 
 float worldY = 392; // Map height + 8
+float worldX = 0;
 
 TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
 
@@ -152,7 +154,7 @@ void DrawMenu()
 
 void DrawWorld()
 {
-	const Vec2 wo(0, worldY);
+	const Vec2 wo(worldX, worldY);
 
 	world.transform =
 		Mat3::identity() *
@@ -178,20 +180,6 @@ void DrawGame()
 {
 	DrawWorld();
 
-	/*Vec2 movement(0, 1);
-	movement.rotate(angle);
-	pos += movement;*/
-
-	float radian = (pi * car.degrees) / 180.00f;
-
-	auto x = cos(radian);
-	auto y = sin(radian);
-
-	
-	car.y += y;
-	
-	car.x += x;
-
 	screen.sprite(car.spriteLocation, Point(car.x, car.y));
 }
 
@@ -207,7 +195,7 @@ void DrawGameOver()
 // amount if milliseconds elapsed since the start of your game
 //
 void render(uint32_t time) {
-	//screen.pen = Pen(0, 0, 0, 255);
+	screen.pen = Pen(0, 0, 0, 255);
 	//screen.mask = nullptr;
 	
 	// clear the screen -- screen is a reference to the frame buffer and can be used to draw all things with the 32blit
@@ -258,12 +246,44 @@ void update(uint32_t time) {
 			car.x = maxX / 4;
 			car.y = maxY / 4;
 		}
-		//worldY -= 0.01f;
-		//worldY -= 0.5f;
+        else if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
+            if(car.degrees >= 360)
+            {
+                car.degrees = 0;
+            }
+            else
+            {
+                car.degrees += 5;
+            }
+        }
+        else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
+            if(car.degrees == 0)
+            {
+                car.degrees = 360;
+            }
+            else
+            {
+                car.degrees -= 5;
+            }
+        }
+        /*Vec2 movement(0, 1);
+        movement.rotate(angle);
+        pos += movement;*/
+        float radian = (pi * car.degrees) / 180.00f;
+
+        auto x = cos(radian);
+        auto y = sin(radian);
+
+
+        car.y += y / 4;
+
+        car.x += x / 4;
+
+        worldX += x / 4;
+		worldY += y / 4;
 		break;
-	case GameOver:
-		
-		break;
+	//case GameOver:
+		//break;
 	}
 
 	lastButtons = blit::buttons;
