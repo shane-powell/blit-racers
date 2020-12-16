@@ -14,6 +14,11 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
+int8_t maxSpeed = 5;
+
+float lastXValue = 0.0;
+float lastYValue = 0.0;
+
 class Actor {
 public:
 	virtual ~Actor() = default;
@@ -27,9 +32,9 @@ public:
 	std::map<float, Rect> sprites;
 	uint8_t inputDelay = 0;
 	bool moveEnabled = true;
-	const uint8_t steeringDelay = 10;
+	const uint8_t STEERINGDELAY = 5;
 
-	float speedMultiplier = 0.0f;
+	float speedMultiplier = 0.0;
 	
 	/*float xSpeed = 0.0f;
 	float ySpeed = 0.0f;*/
@@ -42,20 +47,36 @@ public:
 		this->y = yIn;
 	}
 
-	/*virtual Size GetSize()
+	void GenerateSpriteMap(float angle)
 	{
-		return this->size;
-	}
+		int32_t x = 0;
+		int32_t y = 0;
+		
+		for (int8_t i = 0; i < 24; i++)
+		{
+			sprites.emplace(angle, Rect(x, y, 3, 3));
 
-	virtual Rect GetSpriteLocation()
-	{
-		return this->spriteLocation;
+			if(x < 12)
+			{
+				x += 3;
+			}
+			else
+			{
+				x = 0;
+				y += 3;
+			}
+			
+			if(angle == 360)
+			{
+				angle = 15;
+				sprites.emplace(0, Rect(x, y, 3, 3));
+			}
+			else
+			{
+				angle += 15;
+			}
+		}
 	}
-
-	Point GetLocation()
-	{
-		return this->loc;
-	}*/
 };
 
 enum PlayerState
@@ -168,36 +189,7 @@ void init() {
 	car.size = Size(24, 24);
 	car.spriteLocation = Rect(0, 0, 3, 3);
 
-	car.sprites.emplace(270, Rect(0, 0, 3, 3));
-	car.sprites.emplace(285, Rect(0, 0, 3, 3));
-	car.sprites.emplace(300, Rect(3, 0, 3, 3));
-	car.sprites.emplace(315, Rect(6, 0, 3, 3));
-	car.sprites.emplace(330, Rect(9, 0, 3, 3));
-	car.sprites.emplace(345, Rect(12, 0, 3, 3));
-	car.sprites.emplace(0, Rect(3, 3, 3, 3));
-	car.sprites.emplace(360, Rect(3, 3, 3, 3));
-
-	car.sprites.emplace(15, Rect(6, 3, 3, 3));
-	car.sprites.emplace(30, Rect(9, 3, 3, 3));
-	car.sprites.emplace(45, Rect(12, 3, 3, 3));
-	car.sprites.emplace(60, Rect(0, 6, 3, 3));
-	car.sprites.emplace(75, Rect(3, 6, 3, 3));
-	car.sprites.emplace(90, Rect(6, 6, 3, 3));
-
-	car.sprites.emplace(105, Rect(9, 6, 3, 3));
-	car.sprites.emplace(120, Rect(12, 6, 3, 3));
-	car.sprites.emplace(135, Rect(0, 9, 3, 3));
-	car.sprites.emplace(150, Rect(3, 9, 3, 3));
-	car.sprites.emplace(165, Rect(6, 9, 3, 3));
-	car.sprites.emplace(180, Rect(9, 9, 3, 3));
-
-	car.sprites.emplace(195, Rect(12, 9, 3, 3));
-	car.sprites.emplace(210, Rect(0, 12, 3, 3));
-	car.sprites.emplace(225, Rect(3, 12, 3, 3));
-	car.sprites.emplace(240, Rect(6, 12, 3, 3));
-	car.sprites.emplace(255, Rect(9, 12, 3, 3));
-
-
+	car.GenerateSpriteMap(180);
 
 	car.x = 30;
 	car.y = 30;
@@ -205,6 +197,8 @@ void init() {
 	car.camera = Vec2(car.x + (car.size.w / 2), car.y + (car.size.h / 2));
 
 }
+
+
 
 void DrawMenu()
 {
@@ -232,8 +226,11 @@ void DrawGame()
 	//screen.sprite(car.spriteLocation, Point(car.x, car.y));
 	screen.sprite(car.sprites[car.degrees], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 	screen.pen = Pen(255, 0, 0);
-	screen.text("X: " + std::to_string((int)car.x), fat_font, Point(0, 0));
-	screen.text("Y: " + std::to_string((int)car.y), fat_font, Point(0, 10));
+	screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 0));
+	screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 10));
+
+	/*screen.text("Speed X: " + std::to_string(lastXValue), minimal_font, Point(0, 20));
+	screen.text("Speed Y: " + std::to_string(lastYValue), minimal_font, Point(0, 30));*/
 }
 
 void DrawGameOver()
@@ -301,18 +298,24 @@ void update(uint32_t time) {
 	case Play:
 		if(car.moveEnabled)
 		{
-			if (buttons & Button::A)
+			if (buttons & Button::A && car.speedMultiplier < maxSpeed)
 			{
-				car.speedMultiplier += 0.1;
+				car.speedMultiplier += 0.1;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			}
 			else if(car.speedMultiplier > 0)
 			{
-				car.speedMultiplier -= 0.1;
+				if (car.inputDelay == 0)
+				{
+					car.speedMultiplier -= 0.05;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+					car.speedMultiplier = std::max((float)0, car.speedMultiplier);
+				}
 			}
+			
 			if(car.inputDelay == 0)
 			{
 				if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
-					car.inputDelay = car.steeringDelay;
+					car.inputDelay = car.STEERINGDELAY;
+					
 					if (car.degrees == 360)
 					{
 						car.degrees = 15;
@@ -323,7 +326,8 @@ void update(uint32_t time) {
 					}
 				}
 				else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
-					car.inputDelay = car.steeringDelay;
+					car.inputDelay = car.STEERINGDELAY;
+					
 					if (car.degrees == 0)
 					{
 						car.degrees = 360 - 15;
@@ -335,27 +339,27 @@ void update(uint32_t time) {
 				}
 			}
 
-			/*Vec2 movement(0, 1);
-			movement.rotate(angle);
-			pos += movement;*/
-			float radian = (pi * car.degrees) / 180.00f;
+				float radian = (pi * car.degrees) / 180.00f;
 
-			auto x = cos(radian);
-			auto y = sin(radian);
+				Vec2 movement(0, 1);
+				movement.rotate(radian);
 
-			const auto xIn = (x / 16) * car.speedMultiplier;
-			const auto yIn = (y / 16) * car.speedMultiplier;
+			/*	auto x = cos(radian);
+				auto y = sin(radian);
 
-			//need to map screenspace to location
+				const auto xIn = (x / 16) * car.speedMultiplier;
+				const auto yIn = (y / 16) * car.speedMultiplier;
 
-			car.y += yIn;
+				lastXValue = xIn;
+				lastYValue = yIn;*/
+				
+				//car.y += yIn;
 
-			car.x += xIn;
+				//car.x += xIn;
 
-			//worldX += xIn;
-			//worldX = (car.x + (car.size.w / 2)) - (maxX / 2);
-			//worldY += yIn;
-			//worldY = (car.y + (car.size.h / 2)) - (maxY / 2);
+				car.y += movement.y / 16;
+
+				car.x += movement.x / 16;
 		}
 		
 
