@@ -94,10 +94,10 @@ enum GameState {
 };
 
 GameState state = Menu;
-SpriteSheet* backGroundSurface;
-SpriteSheet* menu0ss;
-SpriteSheet* menu1ss;
-SpriteSheet* gameOver;
+Surface* backGroundSurface;
+Surface* menu0ss;
+Surface* menu1ss;
+Surface* gameOver;
 
 class Game
 {
