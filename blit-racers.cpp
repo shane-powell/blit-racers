@@ -137,9 +137,9 @@ Game game;
 
 Actor car;
 
-const uint32_t tilemap_width = 32;
+const uint32_t tilemap_width = 128;
 
-const uint32_t tilemap_height = 64;
+const uint32_t tilemap_height = 128;
 
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
