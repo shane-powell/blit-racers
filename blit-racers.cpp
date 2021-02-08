@@ -14,7 +14,7 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-int8_t maxSpeed = 5;
+int8_t maxSpeed = 5.0f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
@@ -302,12 +302,12 @@ void update(uint32_t time) {
 			{
 				car.speedMultiplier += 0.1;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			}
-			else if(car.speedMultiplier > 0)
+			else if(car.speedMultiplier > 0 && !(buttons & Button::A))
 			{
 				if (car.inputDelay == 0)
 				{
-					car.speedMultiplier -= 0.05;  // NOLINT(clang-diagnostic-implicit-float-conversion)
-					car.speedMultiplier = std::max((float)0, car.speedMultiplier);
+					car.speedMultiplier -= 0.1;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+					car.speedMultiplier = std::max(static_cast<float>(0), car.speedMultiplier);
 				}
 			}
 			
@@ -316,7 +316,7 @@ void update(uint32_t time) {
 				if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
 					car.inputDelay = car.STEERINGDELAY;
 					
-					if (car.degrees == 360)
+					if (car.degrees == 360.0f)
 					{
 						car.degrees = 15;
 					}
@@ -328,7 +328,7 @@ void update(uint32_t time) {
 				else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
 					car.inputDelay = car.STEERINGDELAY;
 					
-					if (car.degrees == 0)
+					if (car.degrees == 0.0f)
 					{
 						car.degrees = 360 - 15;
 					}
@@ -344,22 +344,9 @@ void update(uint32_t time) {
 				Vec2 movement(0, 1);
 				movement.rotate(radian);
 
-			/*	auto x = cos(radian);
-				auto y = sin(radian);
+				car.y += movement.y / 16 * car.speedMultiplier;
 
-				const auto xIn = (x / 16) * car.speedMultiplier;
-				const auto yIn = (y / 16) * car.speedMultiplier;
-
-				lastXValue = xIn;
-				lastYValue = yIn;*/
-				
-				//car.y += yIn;
-
-				//car.x += xIn;
-
-				car.y += movement.y / 16;
-
-				car.x += movement.x / 16;
+				car.x += movement.x / 16 * car.speedMultiplier;
 		}
 		
 
