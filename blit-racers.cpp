@@ -14,7 +14,9 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-float maxSpeed = 5.0f;
+float maxSpeed = 0.1f;
+float acceleration = 0.1f;
+float slowdown = 0.1f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
@@ -33,6 +35,8 @@ public:
 	uint8_t inputDelay = 0;
 	bool moveEnabled = true;
 	const uint8_t STEERINGDELAY = 5;
+
+	Vec2 movement;
 
 	float speedMultiplier = 0.0;
 	
@@ -226,8 +230,10 @@ void DrawGame()
 	//screen.sprite(car.spriteLocation, Point(car.x, car.y));
 	screen.sprite(car.sprites[car.degrees], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 	screen.pen = Pen(255, 0, 0);
-	screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 0));
-	screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 10));
+	screen.text("X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
+	screen.text("Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
+	screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
+
 
 	/*screen.text("Speed X: " + std::to_string(lastXValue), minimal_font, Point(0, 20));
 	screen.text("Speed Y: " + std::to_string(lastYValue), minimal_font, Point(0, 30));*/
@@ -300,15 +306,16 @@ void update(uint32_t time) {
 		{
 			if (buttons & Button::A && car.speedMultiplier < maxSpeed)
 			{
-				car.speedMultiplier += 0.1;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+				car.speedMultiplier += acceleration;
+				car.speedMultiplier = std::min(maxSpeed, car.speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			}
 			else if(car.speedMultiplier > 0 && !(buttons & Button::A))
 			{
-				if (car.inputDelay == 0)
-				{
-					car.speedMultiplier -= 0.1;  // NOLINT(clang-diagnostic-implicit-float-conversion)
-					car.speedMultiplier = std::max(static_cast<float>(0), car.speedMultiplier);
-				}
+				/*if (car.inputDelay == 0)
+				{*/
+					car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+					car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
+				//}
 			}
 			
 			if(car.inputDelay == 0)
@@ -344,16 +351,21 @@ void update(uint32_t time) {
 				Vec2 movement(0, 1);
 				movement.rotate(radian);
 
-				car.y += movement.y / 16 * car.speedMultiplier;
+				movement.y = movement.y * car.speedMultiplier;
+				movement.x = movement.x * car.speedMultiplier;
+			
+				car.y += movement.y; 
 
-				car.x += movement.x / 16 * car.speedMultiplier;
+				car.x += movement.x;
+
+				car.movement = movement;
 		}
 		
 
 		update_camera();
 		break;
-	//case GameOver:
-		//break;
+	case GameOver:
+		break;
 	}
 
 	lastButtons = blit::buttons;
