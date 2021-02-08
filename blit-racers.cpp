@@ -14,7 +14,7 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-int8_t maxSpeed = 5.0f;
+float maxSpeed = 5.0f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
