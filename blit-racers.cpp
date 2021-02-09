@@ -17,6 +17,8 @@ Mat3 camera;
 float maxSpeed = 0.1f;
 float acceleration = 0.1f;
 float slowdown = 0.1f;
+float rotationIncrement = 5;
+float spriteRotationalSegmentSize = 15.0f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
@@ -36,10 +38,13 @@ public:
 	bool moveEnabled = true;
 	const uint8_t STEERINGDELAY = 5;
 
+	float prevX = 0.0f;
+	float prevY = 0.0f;
+
 	Vec2 movement;
 
 	float speedMultiplier = 0.0;
-	
+
 	/*float xSpeed = 0.0f;
 	float ySpeed = 0.0f;*/
 
@@ -49,18 +54,20 @@ public:
 	{
 		this->x = xIn;
 		this->y = yIn;
+
+		movement = Vec2(0, 1);
 	}
 
 	void GenerateSpriteMap(float angle)
 	{
 		int32_t x = 0;
 		int32_t y = 0;
-		
+
 		for (int8_t i = 0; i < 24; i++)
 		{
 			sprites.emplace(angle, Rect(x, y, 3, 3));
 
-			if(x < 12)
+			if (x < 12)
 			{
 				x += 3;
 			}
@@ -69,8 +76,8 @@ public:
 				x = 0;
 				y += 3;
 			}
-			
-			if(angle == 360)
+
+			if (angle == 360)
 			{
 				angle = 15;
 				sprites.emplace(0, Rect(x, y, 3, 3));
@@ -123,7 +130,7 @@ public:
 
 	void Update()
 	{
-		if(vibrationTimer > 0)
+		if (vibrationTimer > 0)
 		{
 			blit::vibration = 1;
 			vibrationTimer--;
@@ -206,7 +213,7 @@ void init() {
 
 void DrawMenu()
 {
-	
+
 }
 
 
@@ -218,7 +225,7 @@ void DrawWorld()
 	world.transform =
 		Mat3::identity() *
 		Mat3::translation(wo);*/
-		
+
 	world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 }
@@ -228,7 +235,24 @@ void DrawGame()
 	DrawWorld();
 
 	//screen.sprite(car.spriteLocation, Point(car.x, car.y));
-	screen.sprite(car.sprites[car.degrees], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
+
+	auto sprite = car.degrees;
+
+	float remainder = fmod(sprite, spriteRotationalSegmentSize);
+	
+	if(remainder > 0)
+	{
+		if(remainder < spriteRotationalSegmentSize / 2)
+		{
+			sprite -= remainder;
+		}
+		else
+		{
+			sprite += (spriteRotationalSegmentSize - remainder);
+		}
+	}
+	
+	screen.sprite(car.sprites[sprite], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 	screen.pen = Pen(255, 0, 0);
 	screen.text("X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
 	screen.text("Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
@@ -253,10 +277,10 @@ void DrawGameOver()
 void render(uint32_t time) {
 	screen.pen = Pen(0, 0, 0, 255);
 	//screen.mask = nullptr;
-	
+
 	// clear the screen -- screen is a reference to the frame buffer and can be used to draw all things with the 32blit
 	screen.clear();
-	
+
 
 	switch (state)
 	{
@@ -282,13 +306,13 @@ void render(uint32_t time) {
 // amount if milliseconds elapsed since the start of your game
 //
 void update(uint32_t time) {
-	
+
 	static uint16_t lastButtons = 0;
 	uint16_t changed = blit::buttons ^ lastButtons;
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
 
-	if(car.inputDelay > 0)
+	if (car.inputDelay > 0)
 	{
 		car.inputDelay--;
 	}
@@ -302,65 +326,74 @@ void update(uint32_t time) {
 		}
 		break;
 	case Play:
-		if(car.moveEnabled)
+		if (car.moveEnabled)
 		{
 			if (buttons & Button::A && car.speedMultiplier < maxSpeed)
 			{
 				car.speedMultiplier += acceleration;
 				car.speedMultiplier = std::min(maxSpeed, car.speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			}
-			else if(car.speedMultiplier > 0 && !(buttons & Button::A))
+			else if (car.speedMultiplier > 0 && !(buttons & Button::A))
 			{
 				/*if (car.inputDelay == 0)
 				{*/
-					car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
-					car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
+				car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+				car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
 				//}
 			}
-			
-			if(car.inputDelay == 0)
+
+			if (car.inputDelay == 0)
 			{
 				if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
 					car.inputDelay = car.STEERINGDELAY;
-					
+
 					if (car.degrees == 360.0f)
 					{
-						car.degrees = 15;
+						car.degrees = rotationIncrement;
 					}
 					else
 					{
-						car.degrees += 15;
+						car.degrees += rotationIncrement;
 					}
 				}
 				else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
 					car.inputDelay = car.STEERINGDELAY;
-					
+
 					if (car.degrees == 0.0f)
 					{
-						car.degrees = 360 - 15;
+						car.degrees = 360 - rotationIncrement;
 					}
 					else
 					{
-						car.degrees -= 15;
+						car.degrees -= rotationIncrement;
 					}
 				}
 			}
 
-				float radian = (pi * car.degrees) / 180.00f;
+			float radian = (pi * car.degrees) / 180.00f;
 
-				Vec2 movement(0, 1);
-				movement.rotate(radian);
+			car.movement.x = car.movement.x * 0.8f;
+			car.movement.y = car.movement.y * 0.8f;
 
-				movement.y = movement.y * car.speedMultiplier;
-				movement.x = movement.x * car.speedMultiplier;
-			
-				car.y += movement.y; 
+			Vec2 newVector = Vec2(0, 1);
 
-				car.x += movement.x;
+			newVector.rotate(radian);
 
-				car.movement = movement;
+			newVector.x = newVector.x * car.speedMultiplier;
+			newVector.y = newVector.y * car.speedMultiplier;
+
+			car.movement.x += newVector.x;
+			car.movement.y += newVector.y;
+
+			/*car.x += car.movement.x;
+			car.y += car.movement.y;*/
+
+			car.x += newVector.x;
+			car.y += newVector.y;
+
+
 		}
-		
+
 
 		update_camera();
 		break;
