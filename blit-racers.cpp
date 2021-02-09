@@ -19,6 +19,7 @@ float acceleration = 0.1f;
 float slowdown = 0.1f;
 float rotationIncrement = 5;
 float spriteRotationalSegmentSize = 15.0f;
+float friction = 0.3f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
@@ -376,20 +377,23 @@ void update(uint32_t time) {
 			car.movement.y = car.movement.y * 0.8f;
 
 			Vec2 newVector = Vec2(0, 1);
-
 			newVector.rotate(radian);
+			//newVector = newVector * newVector.dot(car.movement);
 
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
+			car.movement.x = car.movement.x * friction;
+			car.movement.y = car.movement.y * friction;
+			
 			car.movement.x += newVector.x;
 			car.movement.y += newVector.y;
+			
+			car.x += car.movement.x;
+			car.y += car.movement.y;
 
-			/*car.x += car.movement.x;
-			car.y += car.movement.y;*/
-
-			car.x += newVector.x;
-			car.y += newVector.y;
+			//car.x += newVector.x;
+			//car.y += newVector.y;
 
 
 		}
