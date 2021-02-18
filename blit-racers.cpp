@@ -46,9 +46,6 @@ public:
 
 	float speedMultiplier = 0.0;
 
-	/*float xSpeed = 0.0f;
-	float ySpeed = 0.0f;*/
-
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -338,7 +335,7 @@ void update(uint32_t time) {
 			{
 				/*if (car.inputDelay == 0)
 				{*/
-				car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+				//car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 				car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
 				//}
 			}
@@ -373,8 +370,11 @@ void update(uint32_t time) {
 
 			float radian = (pi * car.degrees) / 180.00f;
 
-			car.movement.x = car.movement.x * 0.8f;
-			car.movement.y = car.movement.y * 0.8f;
+			//if(oldDegrees != car.degrees)
+			//{
+			//	car.movement.x = car.movement.x * 0.8f;
+			//	car.movement.y = car.movement.y * 0.8f;
+			//}
 
 			Vec2 newVector = Vec2(0, 1);
 			newVector.rotate(radian);
@@ -385,6 +385,8 @@ void update(uint32_t time) {
 
 			car.movement.x = car.movement.x * friction;
 			car.movement.y = car.movement.y * friction;
+
+			car.movement.rotate(radian);
 			
 			car.movement.x += newVector.x;
 			car.movement.y += newVector.y;
@@ -392,6 +394,8 @@ void update(uint32_t time) {
 			car.x += car.movement.x;
 			car.y += car.movement.y;
 
+			newVector.rotate(radian * -1);
+			
 			//car.x += newVector.x;
 			//car.y += newVector.y;
 
