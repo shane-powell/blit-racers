@@ -19,7 +19,7 @@ float acceleration = 0.1f;
 float slowdown = 0.1f;
 float rotationIncrement = 5;
 float spriteRotationalSegmentSize = 15.0f;
-float friction = 0.3f;
+float friction = 0.1f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
@@ -333,11 +333,8 @@ void update(uint32_t time) {
 			}
 			else if (car.speedMultiplier > 0 && !(buttons & Button::A))
 			{
-				/*if (car.inputDelay == 0)
-				{*/
-				//car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+				car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 				car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
-				//}
 			}
 
 			if (car.inputDelay == 0)
@@ -369,12 +366,6 @@ void update(uint32_t time) {
 			}
 
 			float radian = (pi * car.degrees) / 180.00f;
-
-			//if(oldDegrees != car.degrees)
-			//{
-			//	car.movement.x = car.movement.x * 0.8f;
-			//	car.movement.y = car.movement.y * 0.8f;
-			//}
 
 			Vec2 newVector = Vec2(0, 1);
 			newVector.rotate(radian);
