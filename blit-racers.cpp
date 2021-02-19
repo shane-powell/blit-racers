@@ -14,15 +14,17 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-float maxSpeed = 0.1f;
-float acceleration = 0.1f;
-float slowdown = 0.1f;
+float maxSpeed = 0.3f;
+float acceleration = 0.001f;
+float slowdown = 0.002f;
 float rotationIncrement = 5;
 float spriteRotationalSegmentSize = 15.0f;
 float friction = 0.1f;
 
 float lastXValue = 0.0;
 float lastYValue = 0.0;
+
+bool debugMode = false;
 
 class Actor {
 public:
@@ -163,7 +165,7 @@ std::function<Mat3(uint8_t)> level_line_interrupt_callback = [](uint8_t y) -> Ma
 
 void update_camera() {
 	// Create a camera transform that centers around the car's position
-	if (car.camera.x < car.x) {
+	/*if (car.camera.x < car.x) {
 		car.camera.x += 0.1f;
 	}
 	if (car.camera.x > car.x) {
@@ -174,7 +176,10 @@ void update_camera() {
 	}
 	if (car.camera.y > car.y) {
 		car.camera.y -= 0.1f;
-	}
+	}*/
+
+	car.camera.x = car.x;
+	car.camera.y = car.y;
 
 
 	camera = Mat3::identity();
@@ -252,13 +257,19 @@ void DrawGame()
 	
 	screen.sprite(car.sprites[sprite], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 	screen.pen = Pen(255, 0, 0);
-	screen.text("X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
-	screen.text("Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
-	screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
+
+	if(debugMode)
+	{
+		screen.text("Vec X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
+		screen.text("Vec Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
+		screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
 
 
-	/*screen.text("Speed X: " + std::to_string(lastXValue), minimal_font, Point(0, 20));
-	screen.text("Speed Y: " + std::to_string(lastYValue), minimal_font, Point(0, 30));*/
+		screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
+		screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 40));
+		screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 50));
+	}
+	
 }
 
 void DrawGameOver()
@@ -295,6 +306,21 @@ void render(uint32_t time) {
 }
 
 
+void ApplyCarMovement(float radian, Vec2 newVector)
+{
+	car.movement.x = car.movement.x * friction;
+	car.movement.y = car.movement.y * friction;
+
+	car.movement.rotate(radian);
+			
+	car.movement.x += newVector.x;
+	car.movement.y += newVector.y;
+			
+	car.x += car.movement.x;
+	car.y += car.movement.y;
+
+	newVector.rotate(radian * -1);
+}
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -369,26 +395,13 @@ void update(uint32_t time) {
 
 			Vec2 newVector = Vec2(0, 1);
 			newVector.rotate(radian);
-			//newVector = newVector * newVector.dot(car.movement);
 
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
-			car.movement.x = car.movement.x * friction;
-			car.movement.y = car.movement.y * friction;
-
-			car.movement.rotate(radian);
+			ApplyCarMovement(radian, newVector);
 			
-			car.movement.x += newVector.x;
-			car.movement.y += newVector.y;
 			
-			car.x += car.movement.x;
-			car.y += car.movement.y;
-
-			newVector.rotate(radian * -1);
-			
-			//car.x += newVector.x;
-			//car.y += newVector.y;
 
 
 		}
