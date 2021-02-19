@@ -102,7 +102,7 @@ enum GameState {
 	GameOver
 };
 
-GameState state = Menu;
+GameState state = Play;
 Surface* backGroundSurface;
 Surface* menu0ss;
 Surface* menu1ss;
