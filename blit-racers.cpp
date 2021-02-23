@@ -39,7 +39,8 @@ public:
 	std::map<float, Rect> sprites;
 	uint8_t inputDelay = 0;
 	bool moveEnabled = true;
-	const uint8_t STEERINGDELAY = 5;
+	const uint8_t STEERINGDELAYMIN = 3;
+	const uint8_t STEERINGDELAYMAX = 5;
 
 	float prevX = 0.0f;
 	float prevY = 0.0f;
@@ -57,6 +58,8 @@ public:
 
 		movement = Vec2(0, 1);
 	}
+
+
 
 	void GenerateSpriteMap(float angle)
 	{
@@ -168,6 +171,14 @@ TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilem
 std::function<Mat3(uint8_t)> level_line_interrupt_callback = [](uint8_t y) -> Mat3 {
 	return camera;
 };
+
+static double MapRange(float range1Min, float rang1Max, float range1Value, float range2Min, float range2Max)
+{
+	const float slope = 1.0f * (range2Max - range2Min) / (rang1Max - range1Min);
+	const auto output = range2Min + slope * (range1Value - range1Min);
+
+	return output;
+}
 
 void update_camera() {
 	// Create a camera transform that centers around the car's position
@@ -375,7 +386,7 @@ void update(uint32_t time) {
 			if (car.inputDelay == 0)
 			{
 				if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
-					car.inputDelay = car.STEERINGDELAY;
+					car.inputDelay = round(MapRange(0, maxSpeed, car.speedMultiplier, car.STEERINGDELAYMIN, car.STEERINGDELAYMAX));
 
 					if (car.degrees == 360.0f)
 					{
@@ -387,7 +398,7 @@ void update(uint32_t time) {
 					}
 				}
 				else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
-					car.inputDelay = car.STEERINGDELAY;
+					car.inputDelay = round(MapRange(0, maxSpeed, car.speedMultiplier, car.STEERINGDELAYMIN, car.STEERINGDELAYMAX));
 
 					if (car.degrees == 0.0f)
 					{
