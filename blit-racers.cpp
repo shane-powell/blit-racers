@@ -155,7 +155,13 @@ const uint32_t tilemap_height = 128;
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
 
+
+auto objectLayerStart = map1 + tilemap_height * tilemap_width;
+
+
 TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+
 
 // Line-interrupt callback for level->draw that applies our camera transformation
 // This can be expanded to add effects like camera shake, wavy dream-like stuff, all the fun!
@@ -198,6 +204,8 @@ void init() {
 	set_screen_mode(ScreenMode::lores);
 
 	world.sprites = SpriteSheet::load(tile_sheet_1);
+	objectsLayer.sprites = SpriteSheet::load(tile_sheet_1);
+
 	screen.sprites = SpriteSheet::load(car1);
 
 	car.size = Size(24, 24);
@@ -230,6 +238,7 @@ void DrawWorld()
 		Mat3::translation(wo);*/
 
 	world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 }
 
