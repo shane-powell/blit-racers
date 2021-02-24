@@ -14,9 +14,9 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-float maxSpeed = 0.3f;
-float acceleration = 0.001f;
-float slowdown = 0.002f;
+float maxSpeed = 2.0f;
+float acceleration = 0.01f;
+float slowdown = 0.02f;
 float rotationIncrement = 5;
 float spriteRotationalSegmentSize = 15.0f;
 float friction = 0.1f;
@@ -24,7 +24,9 @@ float friction = 0.1f;
 float lastXValue = 0.0;
 float lastYValue = 0.0;
 
-bool debugMode = false;
+bool debugMode = true;
+
+const uint8_t tileSize = 8;
 
 class Actor {
 public:
@@ -147,23 +149,98 @@ public:
 
 };
 
-Game game;
-
-Actor car;
-
 const uint32_t tilemap_width = 128;
 
 const uint32_t tilemap_height = 128;
 
-float worldY = 0; // Map height + 8 // 392
-float worldX = 0;
-
-
-auto objectLayerStart = map1 + tilemap_height * tilemap_width;
 
 
 TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+auto objectLayerStart = map1 + tilemap_height * tilemap_width;
 TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+
+struct TileData
+{
+	uint8_t id = 0;
+	uint16_t index = 0;
+	bool obstruction = false;
+	uint16_t pixels_in_water = 0;
+	bool in_water = false;
+	float movement_modifier = 0;
+	float life_modifier = 0;
+};
+
+uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
+	uint16_t horizontal_location = point.x / tile_size;
+
+	uint16_t vertical_location = (point.y / tile_size) * tile_map_width;
+
+	if ((point.y / tile_size) % tile_size > 0) {
+		vertical_location += 1;
+	}
+
+	const uint16_t array_location = horizontal_location + vertical_location;
+
+	return array_location;
+}
+
+TileData getLocalTileData(const blit::Point& Point_to_check, uint8_t tile_size, uint8_t tileMapWidth, uint8_t spriteWidth, uint8_t* mapLayer) {
+	TileData tileData;
+
+	for (auto y = 0; y < spriteWidth; y++) {
+		for (auto x = 0; x < spriteWidth; x++) {
+			const auto array_location = getTileFromPoint(Point(Point_to_check.x + x, Point_to_check.y + y),
+				tile_size,
+				tileMapWidth);
+			const uint8_t tileScanned = *(mapLayer + array_location); //map1[array_location + tilemap_height * tilemap_width]; //map1[array_location];  //*(mapLayer + array_location); //mapLayer[array_location];
+
+			tileData.id = tileScanned;
+			tileData.index = array_location;
+
+			switch (tileScanned) {
+			//case 10:
+			//case 11:
+			//case 12:
+			//case 13:
+			//case 26:
+			//case 27:
+			//case 28:
+			//case 29:
+				
+			case 36:
+			case 37:
+			case 38:
+			case 39:
+			case 52:
+			case 53:
+			case 54:
+			case 55:
+			case 68:
+			case 69:
+			case 70:
+			case 71:
+			case 84:
+			case 85:
+			case 86:
+			case 87:
+
+				
+				tileData.obstruction = true;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	return tileData;
+}
+
+Game game;
+
+Actor car;
+
+float worldY = 0; // Map height + 8 // 392
+float worldX = 0;
 
 
 // Line-interrupt callback for level->draw that applies our camera transformation
@@ -172,9 +249,9 @@ std::function<Mat3(uint8_t)> level_line_interrupt_callback = [](uint8_t y) -> Ma
 	return camera;
 };
 
-static double MapRange(float range1Min, float rang1Max, float range1Value, float range2Min, float range2Max)
+static double MapRange(float range1Min, float range1Max, float range1Value, float range2Min, float range2Max)
 {
-	const float slope = 1.0f * (range2Max - range2Min) / (rang1Max - range1Min);
+	const float slope = 1.0f * (range2Max - range2Min) / (range1Max - range1Min);
 	const auto output = range2Min + slope * (range1Value - range1Min);
 
 	return output;
@@ -200,8 +277,8 @@ void update_camera() {
 
 
 	camera = Mat3::identity();
-	//camera *= Mat3::translation(Vec2(car.x, car.y)); // offset to middle of world
-	camera *= Mat3::translation(Vec2(car.camera.x * 8.0f, car.camera.y * 8.0f)); // offset to middle of world
+	camera *= Mat3::translation(Vec2(car.x, car.y)); // offset to middle of world
+	//camera *= Mat3::translation(Vec2(car.camera.x * 8.0f, car.camera.y * 8.0f)); // offset to middle of world
 	camera *= Mat3::translation(Vec2(-maxX / 2, -maxY / 2)); // transform to centre of framebuffer
 }
 
@@ -224,8 +301,10 @@ void init() {
 
 	car.GenerateSpriteMap(180);
 
-	car.x = 30;
-	car.y = 30;
+	car.x = 270;
+	car.y = 480;
+
+	car.degrees = 180;
 
 	car.camera = Vec2(car.x + (car.size.w / 2), car.y + (car.size.h / 2));
 
@@ -280,15 +359,18 @@ void DrawGame()
 
 	if(debugMode)
 	{
-		screen.text("Vec X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
-		screen.text("Vec Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
-		screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
+		//screen.text("Vec X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
+		//screen.text("Vec Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
+		//screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
 
 
-		screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
+		//screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
 		screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 40));
 		screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 50));
+		auto tileData = getLocalTileData(Point(car.x, car.y), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
+		screen.text("tile: " + std::to_string(tileData.id), minimal_font, Point(0, 60));
 	}
+
 	
 }
 
@@ -419,6 +501,9 @@ void update(uint32_t time) {
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
+			auto tileData = getLocalTileData(Point(floor(car.x), floor(car.y)), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
+
+			if(!tileData.obstruction)
 			ApplyCarMovement(radian, newVector);
 			
 			
