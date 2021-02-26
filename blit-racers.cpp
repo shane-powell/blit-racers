@@ -24,7 +24,7 @@ float friction = 0.1f;
 float lastXValue = 0.0;
 float lastYValue = 0.0;
 
-bool debugMode = true;
+bool debugMode = false;
 
 const uint8_t tileSize = 8;
 
@@ -184,12 +184,34 @@ uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_ma
 	return array_location;
 }
 
-TileData getLocalTileData(const blit::Point& Point_to_check, uint8_t tile_size, uint8_t tileMapWidth, uint8_t spriteWidth, uint8_t* mapLayer) {
+Game game;
+
+Actor car;
+
+float worldY = 0; // Map height + 8 // 392
+float worldX = 0;
+
+Point worldToScreen(Point point)
+{
+	return Point(
+		point.x - car.camera.x + screen.bounds.w / 2,
+		point.y - car.camera.y + screen.bounds.h / 2);
+}
+
+TileData getLocalTileData(const blit::Point& spriteTopLeft, uint8_t tile_size, uint8_t tileMapWidth, uint8_t spriteWidth, uint8_t* mapLayer) {
 	TileData tileData;
 
 	for (auto y = 0; y < spriteWidth; y++) {
 		for (auto x = 0; x < spriteWidth; x++) {
-			const auto array_location = getTileFromPoint(Point(Point_to_check.x + x, Point_to_check.y + y),
+
+			auto pointToCheck = Point(spriteTopLeft.x + x, spriteTopLeft.y + y);
+
+			if (debugMode)
+			{
+				screen.pixel(worldToScreen(pointToCheck));
+			}
+
+			const auto array_location = getTileFromPoint(pointToCheck,
 				tile_size,
 				tileMapWidth);
 			const uint8_t tileScanned = *(mapLayer + array_location); //map1[array_location + tilemap_height * tilemap_width]; //map1[array_location];  //*(mapLayer + array_location); //mapLayer[array_location];
@@ -198,15 +220,15 @@ TileData getLocalTileData(const blit::Point& Point_to_check, uint8_t tile_size, 
 			tileData.index = array_location;
 
 			switch (tileScanned) {
-			//case 10:
-			//case 11:
-			//case 12:
-			//case 13:
-			//case 26:
-			//case 27:
-			//case 28:
-			//case 29:
-				
+				//case 10:
+				//case 11:
+				//case 12:
+				//case 13:
+				//case 26:
+				//case 27:
+				//case 28:
+				//case 29:
+
 			case 36:
 			case 37:
 			case 38:
@@ -224,7 +246,7 @@ TileData getLocalTileData(const blit::Point& Point_to_check, uint8_t tile_size, 
 			case 86:
 			case 87:
 
-				
+
 				tileData.obstruction = true;
 				break;
 			default:
@@ -234,13 +256,6 @@ TileData getLocalTileData(const blit::Point& Point_to_check, uint8_t tile_size, 
 	}
 	return tileData;
 }
-
-Game game;
-
-Actor car;
-
-float worldY = 0; // Map height + 8 // 392
-float worldX = 0;
 
 
 // Line-interrupt callback for level->draw that applies our camera transformation
@@ -282,6 +297,8 @@ void update_camera() {
 	camera *= Mat3::translation(Vec2(-maxX / 2, -maxY / 2)); // transform to centre of framebuffer
 }
 
+
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // init()
@@ -291,10 +308,10 @@ void update_camera() {
 void init() {
 	set_screen_mode(ScreenMode::lores);
 
-	world.sprites = SpriteSheet::load(tile_sheet_1);
-	objectsLayer.sprites = SpriteSheet::load(tile_sheet_1);
+	world.sprites = Surface::load(tile_sheet_1);
+	objectsLayer.sprites = Surface::load(tile_sheet_1);
 
-	screen.sprites = SpriteSheet::load(car1);
+	screen.sprites = Surface::load(car1);
 
 	car.size = Size(24, 24);
 	car.spriteLocation = Rect(0, 0, 3, 3);
@@ -367,7 +384,7 @@ void DrawGame()
 		//screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
 		screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 40));
 		screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 50));
-		auto tileData = getLocalTileData(Point(car.x, car.y), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
+		auto tileData = getLocalTileData(Point(car.x - (car.size.w / 2), car.y - (car.size.h / 2)), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
 		screen.text("tile: " + std::to_string(tileData.id), minimal_font, Point(0, 60));
 	}
 
@@ -501,9 +518,13 @@ void update(uint32_t time) {
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
-			auto tileData = getLocalTileData(Point(floor(car.x), floor(car.y)), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
+			auto tileData = getLocalTileData(Point(car.x - (car.size.w / 2), car.y - (car.size.h / 2)), tileSize, tilemap_width, car.size.w, objectsLayer.tiles);
 
-			if(!tileData.obstruction)
+			if(tileData.obstruction)
+			{
+				newVector = newVector * -5;
+			}
+			
 			ApplyCarMovement(radian, newVector);
 			
 			
