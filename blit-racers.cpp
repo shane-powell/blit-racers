@@ -52,7 +52,6 @@ struct TileScanData
 class Actor {
 public:
 	virtual ~Actor() = default;
-	//Point loc = Point(16, 16);
 	Size size;
 	Rect spriteLocation;
 	float x = 0.0f;
@@ -73,6 +72,8 @@ public:
 	float speedMultiplier = 0.0;
 
 	TileScanData currentTileData;
+
+	uint8_t currentCheckpoint = 1;
 
 	Actor() = default;
 
@@ -179,8 +180,12 @@ const uint32_t tilemap_height = 128;
 
 
 TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+
 auto objectLayerStart = map1 + tilemap_height * tilemap_width;
 TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
+
+auto checkpointLayerStart = map1 + ((tilemap_height * tilemap_width) * 2);
+TileMap checkpointLayer(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
 
 uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
 	uint16_t horizontal_location = (point.x / tile_size) - 1;
@@ -211,6 +216,7 @@ Point worldToScreen(Point point)
 		point.y - car.camera.y + screen.bounds.h / 2);
 }
 
+// todo replace point and sprite width/height with rect
 TileScanData getLocalTileData(const blit::Point& spriteTopLeft, uint8_t tile_size, uint8_t tileMapWidth, uint8_t spriteWidth, uint8_t spriteHeight, uint8_t* mapLayer) {
 	TileScanData tileScanData;
 
@@ -326,6 +332,7 @@ void init() {
 
 	world.sprites = Surface::load(tile_sheet_1);
 	objectsLayer.sprites = Surface::load(tile_sheet_1);
+	checkpointLayer.sprites = Surface::load(tile_sheet_1);
 
 	screen.sprites = Surface::load(car1);
 
@@ -362,6 +369,7 @@ void DrawWorld()
 
 	world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 }
 
