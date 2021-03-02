@@ -217,12 +217,12 @@ Point worldToScreen(Point point)
 }
 
 // todo replace point and sprite width/height with rect
-TileScanData getLocalTileData(const blit::Point& spriteTopLeft, uint8_t tile_size, uint8_t tileMapWidth, uint8_t spriteWidth, uint8_t spriteHeight, uint8_t* mapLayer) {
+TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer) {
 	TileScanData tileScanData;
 
-	for (auto y = 0; y < spriteHeight; y++) {
-		for (auto x = 0; x < spriteWidth; x++) {
-			auto pointToCheck = Point(spriteTopLeft.x + x, spriteTopLeft.y + y);
+	for (auto y = 0; y < boundingBox.h; y++) {
+		for (auto x = 0; x < boundingBox.w; x++) {
+			auto pointToCheck = Point(boundingBox.x + x, boundingBox.y + y);
 
 			tileScanData.pointsChecked.emplace_back(pointToCheck);
 
@@ -568,7 +568,7 @@ void update(uint32_t time) {
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
-			car.currentTileData = getLocalTileData(Point(car.x - (car.size.w / 2), car.y - (car.size.h / 2)), tileSize, tilemap_width, car.size.w, car.size.h, objectsLayer.tiles);
+			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, objectsLayer.tiles);
 
 			if(car.currentTileData.obstruction)
 			{
