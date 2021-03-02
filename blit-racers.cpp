@@ -24,7 +24,7 @@ float friction = 0.1f;
 float lastXValue = 0.0;
 float lastYValue = 0.0;
 
-bool debugMode = true;
+bool debugMode = false;
 
 const uint8_t tileSize = 8;
 
@@ -183,7 +183,7 @@ auto objectLayerStart = map1 + tilemap_height * tilemap_width;
 TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
 
 uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
-	uint16_t horizontal_location = point.x / tile_size - 1;
+	uint16_t horizontal_location = (point.x / tile_size) - 1;
 
 	uint16_t vertical_location = (point.y / tile_size) * tile_map_width;
 
