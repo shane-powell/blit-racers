@@ -47,6 +47,7 @@ struct TileScanData
 	std::vector<Point> pointsChecked;
 	//std::vector<uint8_t> idsFound;
 	std::map<uint8_t, TileData> tilesScanned;
+	Point collisionLocation;
 };
 
 class Actor {
@@ -284,6 +285,7 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 			case 86:
 			case 87:
 				tileScanData.obstruction = true;
+				tileScanData.collisionLocation = pointToCheck;
 				break;
 			default:
 				break;
@@ -572,7 +574,9 @@ void update(uint32_t time) {
 
 			if(car.currentTileData.obstruction)
 			{
-				newVector = newVector * -5;
+				auto collisionVector =  Point(car.x, car.y) - car.currentTileData.collisionLocation;
+				car.x += collisionVector.x;
+				car.y += collisionVector.y;
 			}
 			
 			ApplyCarMovement(radian, newVector);
