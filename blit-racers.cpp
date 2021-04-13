@@ -25,6 +25,7 @@ float lastXValue = 0.0;
 float lastYValue = 0.0;
 
 bool debugMode = false;
+int8_t debugTimer = 0;
 
 const uint8_t tileSize = 8;
 
@@ -371,7 +372,11 @@ void DrawWorld()
 
 	world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
-	checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+
+	if(debugMode)
+	{
+		checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	}
 
 }
 
@@ -521,6 +526,18 @@ void update(uint32_t time) {
 		}
 		break;
 	case Play:
+
+		if(debugTimer > 0)
+		{
+			debugTimer--;
+		}
+
+		if(buttons & Button::X && debugTimer <= 0)
+		{
+			debugMode = !debugMode;
+			debugTimer = 20;
+		}
+
 		if (car.moveEnabled)
 		{
 			if (buttons & Button::A && car.speedMultiplier < maxSpeed)
