@@ -87,8 +87,6 @@ public:
 		movement = Vec2(0, 1);
 	}
 
-
-
 	void GenerateSpriteMap(float angle)
 	{
 		int32_t x = 0;
@@ -413,8 +411,8 @@ void DrawGame()
 
 
 		//screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
-		screen.text("X: " + std::to_string(car.x), minimal_font, Point(0, 40));
-		screen.text("Y: " + std::to_string(car.y), minimal_font, Point(0, 50));
+		screen.text("X: " + std::to_string(int(car.x)), minimal_font, Point(0, 40));
+		screen.text("Y: " + std::to_string(int(car.y)), minimal_font, Point(0, 50));
 
 		std::string ids;
 
