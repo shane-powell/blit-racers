@@ -51,6 +51,21 @@ struct TileScanData
 	Point collisionLocation;
 };
 
+class Track
+{
+	uint8_t checkpointCount = 0;
+	uint8_t mapTiles = NULL;
+	uint8_t mapSpiteSheet = NULL;
+	
+
+	Track(uint8_t checkpointCount, uint8_t mapTiles, uint8_t mapSpiteSheet)
+	{
+		this->checkpointCount = checkpointCount;
+		this->mapTiles = mapTiles;
+		this->mapSpiteSheet = mapSpiteSheet;
+	}
+};
+
 class Actor {
 public:
 	virtual ~Actor() = default;
