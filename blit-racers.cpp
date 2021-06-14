@@ -53,16 +53,37 @@ struct TileScanData
 
 class Track
 {
+public:
 	uint8_t checkpointCount = 0;
-	uint8_t mapTiles = NULL;
-	uint8_t mapSpiteSheet = NULL;
-	
+	uint8_t * mapTiles;
+	uint8_t * mapSpiteSheet;
+	uint32_t tileMapHeight = NULL;
+	uint32_t tileMapWidth = NULL;
+	TileMap world;
+	TileMap objectsLayer;
+	TileMap checkpointLayer;
 
-	Track(uint8_t checkpointCount, uint8_t mapTiles, uint8_t mapSpiteSheet)
+	Track() = default;
+	
+	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet)
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
 		this->mapSpiteSheet = mapSpiteSheet;
+		this->tileMapHeight = tileMapHeight;
+		this->tileMapWidth = tileMapWidth;
+
+		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+
+		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
+		objectsLayer = TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+
+		auto checkpointLayerStart = map1 + ((tileMapHeight * tileMapWidth) * 2);
+		checkpointLayer = TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+
+		world.sprites = Surface::load(worldLayerSheet);
+		objectsLayer.sprites = Surface::load(objectsLayerSheet);
+		checkpointLayer.sprites = Surface::load(checkpointLayerSheet);
 	}
 };
 
@@ -164,6 +185,10 @@ Surface* menu0ss;
 Surface* menu1ss;
 Surface* gameOver;
 
+const uint32_t tilemap_width = 128;
+
+const uint32_t tilemap_height = 128;
+
 class Game
 {
 public:
@@ -172,9 +197,12 @@ public:
 
 	int8_t vibrationTimer = 0;
 
+	Track currentTrack;
+
 	Game()
 	{
-
+		// Load first track
+		currentTrack = Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1));
 	}
 
 	Game(int8_t noPlayers)
@@ -194,21 +222,7 @@ public:
 			blit::vibration = 0;
 		}
 	}
-
-
 };
-
-const uint32_t tilemap_width = 128;
-
-const uint32_t tilemap_height = 128;
-
-TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
-
-auto objectLayerStart = map1 + tilemap_height * tilemap_width;
-TileMap objectsLayer(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
-
-auto checkpointLayerStart = map1 + ((tilemap_height * tilemap_width) * 2);
-TileMap checkpointLayer(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tilemap_width, tilemap_height), nullptr);
 
 uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
 	uint16_t horizontal_location = (point.x / tile_size) - 1;
@@ -359,10 +373,6 @@ void update_camera() {
 void init() {
 	set_screen_mode(ScreenMode::lores);
 
-	world.sprites = Surface::load(tile_sheet_1);
-	objectsLayer.sprites = Surface::load(tile_sheet_1);
-	checkpointLayer.sprites = Surface::load(tile_sheet_1);
-
 	screen.sprites = Surface::load(car1);
 
 	car.size = Size(24, 24);
@@ -396,12 +406,12 @@ void DrawWorld()
 		Mat3::identity() *
 		Mat3::translation(wo);*/
 
-	world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
-	objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game.currentTrack.world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game.currentTrack.objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 	if(debugMode)
 	{
-		checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+		game.currentTrack.checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	}
 
 }
@@ -623,7 +633,7 @@ void update(uint32_t time) {
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
-			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, objectsLayer.tiles, Collision);
+			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
 
 			if(car.currentTileData.obstruction)
 			{
@@ -634,13 +644,19 @@ void update(uint32_t time) {
 			
 			ApplyCarMovement(radian, newVector);
 			
-			auto checkPointScan = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, checkpointLayer.tiles, Checkpoint);
+			auto checkPointScan = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer.tiles, Checkpoint);
 
 			for (auto tiles_scanned : checkPointScan.tilesScanned)
 			{
 				if(tiles_scanned.second.id == car.currentCheckpoint + 1)
 				{
 					car.currentCheckpoint++;
+				}
+				else if(car.currentCheckpoint == game.currentTrack.checkpointCount && tiles_scanned.second.id == 1)
+				{
+					car.currentCheckpoint = 1;
+					car.completedLapTimes.emplace_back(car.lapTime);
+					car.lapTime = 0;
 				}
 			}
 		}
