@@ -202,8 +202,6 @@ const uint32_t tilemap_width = 128;
 
 const uint32_t tilemap_height = 128;
 
-
-
 TileMap world(const_cast<uint8_t*>(map1), nullptr, Size(tilemap_width, tilemap_height), nullptr);
 
 auto objectLayerStart = map1 + tilemap_height * tilemap_width;
@@ -315,7 +313,7 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 				ProcessCollisionScan(tileScanData, pointToCheck, tileScanned);
 				break;
 			case Checkpoint:
-
+				//ProcessCheckpointScan(tileScanData, pointToCheck, tileScanned);
 				break;
 			}
 			
@@ -636,7 +634,15 @@ void update(uint32_t time) {
 			
 			ApplyCarMovement(radian, newVector);
 			
-			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, checkpointLayer.tiles, Checkpoint);
+			auto checkPointScan = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, checkpointLayer.tiles, Checkpoint);
+
+			for (auto tiles_scanned : checkPointScan.tilesScanned)
+			{
+				if(tiles_scanned.second.id == car.currentCheckpoint + 1)
+				{
+					car.currentCheckpoint++;
+				}
+			}
 		}
 
 
