@@ -92,6 +92,10 @@ public:
 
 	uint8_t currentCheckpoint = 1;
 
+	uint32_t lapTime = 0;
+
+	std::vector<uint32_t> completedLapTimes;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -146,6 +150,12 @@ enum GameState {
 	Menu,
 	Play,
 	GameOver
+};
+
+enum TileScanType
+{
+	Collision,
+	Checkpoint
 };
 
 GameState state = Play;
@@ -231,8 +241,44 @@ Point worldToScreen(Point point)
 		point.y - car.camera.y + screen.bounds.h / 2);
 }
 
+void ProcessCollisionScan(TileScanData& tileScanData, Point pointToCheck, const uint8_t tileScanned)
+{
+	switch (tileScanned) {
+		//case 10:
+		//case 11:
+		//case 12:
+		//case 13:
+		//case 26:
+		//case 27:
+		//case 28:
+		//case 29:
+
+	case 36:
+	case 37:
+	case 38:
+	case 39:
+	case 52:
+	case 53:
+	case 54:
+	case 55:
+	case 68:
+	case 69:
+	case 70:
+	case 71:
+	case 84:
+	case 85:
+	case 86:
+	case 87:
+		tileScanData.obstruction = true;
+		tileScanData.collisionLocation = pointToCheck;
+		break;
+	default:
+		break;
+	}
+}
+
 // todo replace point and sprite width/height with rect
-TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer) {
+TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer, TileScanType scanType) {
 	TileScanData tileScanData;
 
 	for (auto y = 0; y < boundingBox.h; y++) {
@@ -253,18 +299,9 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 			tileScanData.id = tileScanned;
 			tileScanData.index = array_location;
 
-			//tileScanData.idsFound.emplace_back(tileScanned);
-
 			if (auto it{ tileScanData.tilesScanned.find(tileScanData.id) }; it != std::end(tileScanData.tilesScanned))
 			{
-				//// Use `structured binding` to get the key
-				//// and value.
-				//auto [key, value] { *it };
-				//auto mvalue{ it->second };
-				//auto kvp{ *it };
-				//mvalue.detectionCount +=1;
 				it->second.detectionCount += 1;
-				//tileScanData.tilesScanned[tileScanData.id].detectionCount += 1;
 			}
 			else
 			{
@@ -272,38 +309,16 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 				tileScanData.tilesScanned.emplace(tileData.id, tileData);
 			}
 
-			switch (tileScanned) {
-				//case 10:
-				//case 11:
-				//case 12:
-				//case 13:
-				//case 26:
-				//case 27:
-				//case 28:
-				//case 29:
-
-			case 36:
-			case 37:
-			case 38:
-			case 39:
-			case 52:
-			case 53:
-			case 54:
-			case 55:
-			case 68:
-			case 69:
-			case 70:
-			case 71:
-			case 84:
-			case 85:
-			case 86:
-			case 87:
-				tileScanData.obstruction = true;
-				tileScanData.collisionLocation = pointToCheck;
+			switch (scanType)
+			{
+			case Collision:
+				ProcessCollisionScan(tileScanData, pointToCheck, tileScanned);
 				break;
-			default:
+			case Checkpoint:
+
 				break;
 			}
+			
 		}
 	}
 	return tileScanData;
@@ -418,6 +433,16 @@ void DrawGame()
 	screen.sprite(car.sprites[sprite], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 	screen.pen = Pen(255, 0, 0);
 
+	uint32_t minutes = car.lapTime / 60000;
+	uint32_t seconds = (car.lapTime % 60000) / 1000;
+	uint32_t milliseconds = car.lapTime % 1000;
+
+	std::string secondString = std::to_string(seconds);
+
+	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
+	
+	screen.text(std::to_string(minutes) + ":" + secondString + ":" + std::to_string(milliseconds), minimal_font, Point(0, 0));
+
 	if(debugMode)
 	{
 		//screen.text("Vec X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
@@ -443,9 +468,7 @@ void DrawGame()
 				i = 0;
 			}
 		}
-		
-		//auto tileData = getLocalTileData(Point(car.x - (car.size.w / 2), car.y - (car.size.h / 2)), tileSize, tilemap_width, car.size.w, car.size.h, objectsLayer.tiles);
-		//screen.text("tile: " + std::to_string(car.currentTileData.id), minimal_font, Point(0, 60));
+
 		screen.text("tiles: " + ids, minimal_font, Point(0, 80));
 
 		for (auto pointChecked : car.currentTileData.pointsChecked)
@@ -525,6 +548,8 @@ void update(uint32_t time) {
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
 
+	car.lapTime += 10;
+	
 	if (car.inputDelay > 0)
 	{
 		car.inputDelay--;
@@ -600,7 +625,7 @@ void update(uint32_t time) {
 			newVector.x = newVector.x * car.speedMultiplier;
 			newVector.y = newVector.y * car.speedMultiplier;
 
-			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, objectsLayer.tiles);
+			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, objectsLayer.tiles, Collision);
 
 			if(car.currentTileData.obstruction)
 			{
@@ -611,9 +636,7 @@ void update(uint32_t time) {
 			
 			ApplyCarMovement(radian, newVector);
 			
-			
-
-
+			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, checkpointLayer.tiles, Checkpoint);
 		}
 
 
