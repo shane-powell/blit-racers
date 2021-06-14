@@ -416,6 +416,19 @@ void DrawWorld()
 
 }
 
+std::string GetLapTimeString(uint32_t lapTime)
+{
+	uint32_t minutes = lapTime / 60000;
+	uint32_t seconds = (lapTime % 60000) / 1000;
+	uint32_t milliseconds = lapTime % 1000;
+
+	std::string secondString = std::to_string(seconds);
+
+	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
+
+	 return std::to_string(minutes) + ":" + secondString + ":" + std::to_string(milliseconds);
+}
+
 void DrawGame()
 {
 	DrawWorld();
@@ -439,17 +452,31 @@ void DrawGame()
 	}
 	
 	screen.sprite(car.sprites[sprite], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
-	screen.pen = Pen(255, 0, 0);
 
-	uint32_t minutes = car.lapTime / 60000;
-	uint32_t seconds = (car.lapTime % 60000) / 1000;
-	uint32_t milliseconds = car.lapTime % 1000;
+	const std::string curLapText = GetLapTimeString(car.lapTime);
 
-	std::string secondString = std::to_string(seconds);
+	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
-	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
+	backgroundSize.w = 40;
 	
-	screen.text(std::to_string(minutes) + ":" + secondString + ":" + std::to_string(milliseconds), minimal_font, Point(0, 0));
+	screen.pen = Pen(0, 0, 0, 128);
+	screen.rectangle(Rect(Point(0,0), backgroundSize));
+
+	screen.pen = Pen(255, 0, 0);
+	screen.text(curLapText, minimal_font, Point(0, 0));
+	uint32_t lapNumber = 1;
+	
+	
+	for (auto completed_lap_time : car.completedLapTimes)
+	{	
+		auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
+		backgroundSize = screen.measure_text(lapTimeString, minimal_font);
+		screen.pen = Pen(0, 0, 0, 128);
+		screen.rectangle(Rect(Point(0, lapNumber * 10), backgroundSize));
+		screen.pen = Pen(255, 0, 0);
+		screen.text( lapTimeString, minimal_font, Point(0, lapNumber * 10));
+		lapNumber ++;
+	}
 
 	if(debugMode)
 	{
