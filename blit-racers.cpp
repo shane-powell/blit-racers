@@ -199,10 +199,29 @@ public:
 
 	Track currentTrack;
 
+	Actor ai;
+	
+	Actor* PlayerCar;
+
 	Game()
 	{
 		// Load first track
 		currentTrack = Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1));
+
+		PlayerCar = new Actor(0, 0);
+		
+		PlayerCar->size = Size(24, 24);
+		PlayerCar->spriteLocation = Rect(0, 0, 3, 3);
+
+		PlayerCar->GenerateSpriteMap(180);
+
+		// todo get start location and direction from track
+		PlayerCar->x = 270;
+		PlayerCar->y = 480;
+
+		PlayerCar->degrees = 180;
+
+		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
 	}
 
 	Game(int8_t noPlayers)
@@ -241,16 +260,14 @@ uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_ma
 
 Game game;
 
-Actor car;
-
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
 
-Point worldToScreen(Point point)
+Point worldToScreen(Point point, Vec2 camera)
 {
 	return Point(
-		point.x - car.camera.x + screen.bounds.w / 2,
-		point.y - car.camera.y + screen.bounds.h / 2);
+		point.x - camera.x + screen.bounds.w / 2,
+		point.y - camera.y + screen.bounds.h / 2);
 }
 
 void ProcessCollisionScan(TileScanData& tileScanData, Point pointToCheck, const uint8_t tileScanned)
@@ -351,14 +368,14 @@ static double MapRange(float range1Min, float range1Max, float range1Value, floa
 	return output;
 }
 
-void update_camera() {
+void update_camera(Actor* car) {
 
-	car.camera.x = car.x;
-	car.camera.y = car.y;
+	car->camera.x = car->x;
+	car->camera.y = car->y;
 
 	camera = Mat3::identity();
-	camera *= Mat3::translation(Vec2(car.x, car.y)); // offset to middle of world
-	//camera *= Mat3::translation(Vec2(car.camera.x * 8.0f, car.camera.y * 8.0f)); // offset to middle of world
+	camera *= Mat3::translation(Vec2(car->x, car->y)); // offset to middle of world
+	//camera *= Mat3::translation(Vec2(PlayerCar->camera.x * 8.0f, PlayerCar->camera.y * 8.0f)); // offset to middle of world
 	camera *= Mat3::translation(Vec2(-maxX / 2, -maxY / 2)); // transform to centre of framebuffer
 }
 
@@ -374,21 +391,7 @@ void init() {
 	set_screen_mode(ScreenMode::lores);
 
 	screen.sprites = Surface::load(car1);
-
-	car.size = Size(24, 24);
-	car.spriteLocation = Rect(0, 0, 3, 3);
-
-	car.GenerateSpriteMap(180);
-
-	car.x = 270;
-	car.y = 480;
-
-	car.degrees = 180;
-
-	car.camera = Vec2(car.x + (car.size.w / 2), car.y + (car.size.h / 2));
-	
 }
-
 
 
 void DrawMenu()
@@ -434,19 +437,15 @@ std::string GetLapTimeString(uint32_t lapTime)
 	 return std::to_string(minutes) + ":" + secondString + ":" + millisecondString;
 }
 
-void DrawGame()
+void DrawCar(Actor* car)
 {
-	DrawWorld();
-
-	//screen.sprite(car.spriteLocation, Point(car.x, car.y));
-
-	auto sprite = car.degrees;
+	auto sprite = car->degrees;
 
 	float remainder = fmod(sprite, spriteRotationalSegmentSize);
-	
-	if(remainder > 0)
+
+	if (remainder > 0)
 	{
-		if(remainder < spriteRotationalSegmentSize / 2)
+		if (remainder < spriteRotationalSegmentSize / 2)
 		{
 			sprite -= remainder;
 		}
@@ -455,10 +454,20 @@ void DrawGame()
 			sprite += (spriteRotationalSegmentSize - remainder);
 		}
 	}
-	
-	screen.sprite(car.sprites[sprite], Point(maxX / 2 - (car.size.w / 2), maxY / 2 - (car.size.h / 2)));
 
-	const std::string curLapText = GetLapTimeString(car.lapTime);
+	screen.sprite(car->sprites[sprite], Point(maxX / 2 - (car->size.w / 2), maxY / 2 - (car->size.h / 2)));
+}
+
+void DrawGame()
+{
+	DrawWorld();
+
+	//screen.sprite(PlayerCar->spriteLocation, Point(PlayerCar->x, PlayerCar->y));
+
+	DrawCar(game.PlayerCar);
+
+
+	const std::string curLapText = GetLapTimeString(game.PlayerCar->lapTime);
 
 	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
@@ -472,7 +481,7 @@ void DrawGame()
 	uint32_t lapNumber = 1;
 	
 	
-	for (auto completed_lap_time : car.completedLapTimes)
+	for (auto completed_lap_time : game.PlayerCar->completedLapTimes)
 	{	
 		auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
 		backgroundSize = screen.measure_text(lapTimeString, minimal_font);
@@ -485,20 +494,20 @@ void DrawGame()
 
 	if(debugMode)
 	{
-		//screen.text("Vec X: " + std::to_string(car.movement.x), minimal_font, Point(0, 0));
-		//screen.text("Vec Y: " + std::to_string(car.movement.y), minimal_font, Point(0, 10));
-		//screen.text("V: " + std::to_string(car.speedMultiplier), minimal_font, Point(0, 20));
+		//screen.text("Vec X: " + std::to_string(PlayerCar->movement.x), minimal_font, Point(0, 0));
+		//screen.text("Vec Y: " + std::to_string(PlayerCar->movement.y), minimal_font, Point(0, 10));
+		//screen.text("V: " + std::to_string(PlayerCar->speedMultiplier), minimal_font, Point(0, 20));
 
 
-		//screen.text("d " + std::to_string(car.degrees), minimal_font, Point(0, 30));
-		screen.text("X: " + std::to_string(int(car.x)), minimal_font, Point(0, 40));
-		screen.text("Y: " + std::to_string(int(car.y)), minimal_font, Point(0, 50));
+		//screen.text("d " + std::to_string(PlayerCar->degrees), minimal_font, Point(0, 30));
+		screen.text("X: " + std::to_string(int(game.PlayerCar->x)), minimal_font, Point(0, 40));
+		screen.text("Y: " + std::to_string(int(game.PlayerCar->y)), minimal_font, Point(0, 50));
 
 		std::string ids;
 
 		int i = 0;
 		
-		for (auto tile : car.currentTileData.tilesScanned)
+		for (auto tile : game.PlayerCar->currentTileData.tilesScanned)
 		{
 			i++;
 			ids.append(std::to_string(tile.second.id) + " (" + std::to_string(tile.second.detectionCount) + ") ");
@@ -511,10 +520,10 @@ void DrawGame()
 
 		screen.text("tiles: " + ids, minimal_font, Point(0, 80));
 
-		for (auto pointChecked : car.currentTileData.pointsChecked)
+		for (auto pointChecked : game.PlayerCar->currentTileData.pointsChecked)
 		{		
 			screen.pen = Pen(0, 255, 0, 50);
-			screen.pixel(worldToScreen(pointChecked));
+			screen.pixel(worldToScreen(pointChecked, game.PlayerCar->camera));
 		}
 
 		screen.pen = Pen(255, 0, 0);
@@ -558,20 +567,107 @@ void render(uint32_t time) {
 }
 
 
-void ApplyCarMovement(float radian, Vec2 newVector)
+void ApplyCarMovement(float radian, Vec2 newVector, Actor* car)
 {
-	car.movement.x = car.movement.x * friction;
-	car.movement.y = car.movement.y * friction;
+	car->movement.x = car->movement.x * friction;
+	car->movement.y = car->movement.y * friction;
 
-	car.movement.rotate(radian);
+	car->movement.rotate(radian);
 			
-	car.movement.x += newVector.x;
-	car.movement.y += newVector.y;
+	car->movement.x += newVector.x;
+	car->movement.y += newVector.y;
 			
-	car.x += car.movement.x;
-	car.y += car.movement.y;
+	car->x += car->movement.x;
+	car->y += car->movement.y;
 
 	newVector.rotate(radian * -1);
+}
+
+void updateCar(Actor* car)
+{
+	car->lapTime += 10;
+
+	if (car->inputDelay > 0)
+	{
+		car->inputDelay--;
+	}
+
+	if (car->moveEnabled)
+	{
+		if (buttons & Button::A && car->speedMultiplier < maxSpeed)
+		{
+			car->speedMultiplier += acceleration;
+			car->speedMultiplier = std::min(maxSpeed, car->speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
+		}
+		else if (car->speedMultiplier > 0 && !(buttons & Button::A))
+		{
+			car->speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+			car->speedMultiplier = std::max(0.0f, car->speedMultiplier);
+		}
+
+		if (car->inputDelay == 0)
+		{
+			if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
+				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+
+				if (car->degrees == 360.0f)
+				{
+					car->degrees = rotationIncrement;
+				}
+				else
+				{
+					car->degrees += rotationIncrement;
+				}
+			}
+			else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
+				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+
+				if (car->degrees == 0.0f)
+				{
+					car->degrees = 360 - rotationIncrement;
+				}
+				else
+				{
+					car->degrees -= rotationIncrement;
+				}
+			}
+		}
+
+		float radian = (pi * car->degrees) / 180.00f;
+
+		Vec2 newVector = Vec2(0, 1);
+		newVector.rotate(radian);
+
+		newVector.x = newVector.x * car->speedMultiplier;
+		newVector.y = newVector.y * car->speedMultiplier;
+
+		car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
+
+		if (car->currentTileData.obstruction)
+		{
+			auto collisionVector = Point(car->x, car->y) - car->currentTileData.collisionLocation;
+			car->x += collisionVector.x;
+			car->y += collisionVector.y;
+		}
+
+		ApplyCarMovement(radian, newVector, car);
+
+		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer.tiles, Checkpoint);
+
+		for (auto tiles_scanned : checkPointScan.tilesScanned)
+		{
+			if (tiles_scanned.second.id == car->currentCheckpoint + 1)
+			{
+				car->currentCheckpoint++;
+			}
+			else if (car->currentCheckpoint == game.currentTrack.checkpointCount && tiles_scanned.second.id == 1)
+			{
+				car->currentCheckpoint = 1;
+				car->completedLapTimes.emplace_back(car->lapTime);
+				car->lapTime = 0;
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -588,12 +684,9 @@ void update(uint32_t time) {
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
 
-	car.lapTime += 10;
+	updateCar(game.PlayerCar);
 	
-	if (car.inputDelay > 0)
-	{
-		car.inputDelay--;
-	}
+	
 
 	switch (state)
 	{
@@ -616,85 +709,7 @@ void update(uint32_t time) {
 			debugTimer = 20;
 		}
 
-		if (car.moveEnabled)
-		{
-			if (buttons & Button::A && car.speedMultiplier < maxSpeed)
-			{
-				car.speedMultiplier += acceleration;
-				car.speedMultiplier = std::min(maxSpeed, car.speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
-			}
-			else if (car.speedMultiplier > 0 && !(buttons & Button::A))
-			{
-				car.speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
-				car.speedMultiplier = std::max(0.0f, car.speedMultiplier);
-			}
-
-			if (car.inputDelay == 0)
-			{
-				if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
-					car.inputDelay = round(MapRange(0, maxSpeed, car.speedMultiplier, car.STEERINGDELAYMIN, car.STEERINGDELAYMAX));
-
-					if (car.degrees == 360.0f)
-					{
-						car.degrees = rotationIncrement;
-					}
-					else
-					{
-						car.degrees += rotationIncrement;
-					}
-				}
-				else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
-					car.inputDelay = round(MapRange(0, maxSpeed, car.speedMultiplier, car.STEERINGDELAYMIN, car.STEERINGDELAYMAX));
-
-					if (car.degrees == 0.0f)
-					{
-						car.degrees = 360 - rotationIncrement;
-					}
-					else
-					{
-						car.degrees -= rotationIncrement;
-					}
-				}
-			}
-
-			float radian = (pi * car.degrees) / 180.00f;
-
-			Vec2 newVector = Vec2(0, 1);
-			newVector.rotate(radian);
-
-			newVector.x = newVector.x * car.speedMultiplier;
-			newVector.y = newVector.y * car.speedMultiplier;
-
-			car.currentTileData = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
-
-			if(car.currentTileData.obstruction)
-			{
-				auto collisionVector =  Point(car.x, car.y) - car.currentTileData.collisionLocation;
-				car.x += collisionVector.x;
-				car.y += collisionVector.y;
-			}
-			
-			ApplyCarMovement(radian, newVector);
-			
-			auto checkPointScan = getLocalTileData(Rect(car.x - (car.size.w / 2), car.y - (car.size.h / 2), car.size.w, car.size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer.tiles, Checkpoint);
-
-			for (auto tiles_scanned : checkPointScan.tilesScanned)
-			{
-				if(tiles_scanned.second.id == car.currentCheckpoint + 1)
-				{
-					car.currentCheckpoint++;
-				}
-				else if(car.currentCheckpoint == game.currentTrack.checkpointCount && tiles_scanned.second.id == 1)
-				{
-					car.currentCheckpoint = 1;
-					car.completedLapTimes.emplace_back(car.lapTime);
-					car.lapTime = 0;
-				}
-			}
-		}
-
-
-		update_camera();
+		update_camera(game.PlayerCar);
 		break;
 	case GameOver:
 		break;
