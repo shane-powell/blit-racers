@@ -418,15 +418,20 @@ void DrawWorld()
 
 std::string GetLapTimeString(uint32_t lapTime)
 {
-	uint32_t minutes = lapTime / 60000;
-	uint32_t seconds = (lapTime % 60000) / 1000;
-	uint32_t milliseconds = lapTime % 1000;
+	const uint32_t minutes = lapTime / 60000;
+	const uint32_t seconds = (lapTime % 60000) / 1000;
+	const uint32_t milliseconds = lapTime % 1000;
 
 	std::string secondString = std::to_string(seconds);
 
 	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
 
-	 return std::to_string(minutes) + ":" + secondString + ":" + std::to_string(milliseconds);
+	std::string millisecondString = std::to_string(milliseconds);
+
+	millisecondString.insert(millisecondString.begin(), 3 - millisecondString.size(), '0');
+
+
+	 return std::to_string(minutes) + ":" + secondString + ":" + millisecondString;
 }
 
 void DrawGame()
