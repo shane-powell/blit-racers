@@ -3,6 +3,7 @@
 #include <limits>
 #include <algorithm>
 #include <map>
+#include <utility>
 using namespace blit;
 
 int32_t maxX = 160;
@@ -51,6 +52,19 @@ struct TileScanData
 	Point collisionLocation;
 };
 
+class Position
+{
+public:
+	Point location;
+	float angle;
+
+	Position(Point location, float angle)
+	{
+		this->location = location;
+		this->angle = angle;
+	}
+};
+
 class Track
 {
 public:
@@ -63,15 +77,18 @@ public:
 	TileMap objectsLayer;
 	TileMap checkpointLayer;
 
+	std::vector<Position> startLocations;
+
 	Track() = default;
 	
-	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet)
+	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet, std::vector<Position> startLocations)
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
 		this->mapSpiteSheet = mapSpiteSheet;
 		this->tileMapHeight = tileMapHeight;
 		this->tileMapWidth = tileMapWidth;
+		this->startLocations = std::move(startLocations);
 
 		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
@@ -125,6 +142,17 @@ public:
 		this->y = yIn;
 
 		movement = Vec2(0, 1);
+		this->GenerateSpriteMap(180);
+	}
+
+	Actor(Position position, Rect spriteLocation, Size size)
+	{
+		this->SetLocation(position);
+		this->spriteLocation = spriteLocation;
+		this->size = size;
+
+		movement = Vec2(0, 1);
+		this->GenerateSpriteMap(180);
 	}
 
 	void GenerateSpriteMap(float angle)
@@ -156,6 +184,13 @@ public:
 				angle += 15;
 			}
 		}
+	}
+
+	void SetLocation(Position gridPosition)
+	{
+		this->x = gridPosition.location.x;
+		this->y = gridPosition.location.y;
+		this->degrees = gridPosition.angle;
 	}
 };
 
@@ -199,27 +234,20 @@ public:
 
 	Track currentTrack;
 
-	Actor ai;
+	std::vector<Actor*> cpuCars;
 	
 	Actor* PlayerCar;
 
 	Game()
 	{
 		// Load first track
-		currentTrack = Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1));
+		currentTrack = Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
+			{
+				Position(Point(270,480),180),
+				Position(Point(310,480),180),
+			});
 
-		PlayerCar = new Actor(0, 0);
-		
-		PlayerCar->size = Size(24, 24);
-		PlayerCar->spriteLocation = Rect(0, 0, 3, 3);
-
-		PlayerCar->GenerateSpriteMap(180);
-
-		// todo get start location and direction from track
-		PlayerCar->x = 270;
-		PlayerCar->y = 480;
-
-		PlayerCar->degrees = 180;
+		PlayerCar = new Actor(currentTrack.startLocations[0], Rect(0, 0, 3, 3), Size(24, 24));
 
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
 	}
