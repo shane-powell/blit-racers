@@ -648,14 +648,51 @@ void updateCar(Actor* car)
 		car->inputDelay--;
 	}
 
+	// Get scan data up front so AI can decide what to do
+	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
+
+
 	if (car->moveEnabled)
 	{
-		if (buttons & Button::A && car->speedMultiplier < maxSpeed)
+		bool accelerate = false;
+		bool left = false;
+		bool right = false;
+		
+		if(car->isPlayer)
+		{
+			if (buttons & Button::A)
+			{
+				accelerate = true;
+			}
+
+			if (buttons & Button::DPAD_RIGHT || joystick.x > 0)
+			{
+				right = true;
+			}
+			else if (buttons & Button::DPAD_LEFT || joystick.x < 0)
+			{
+				left = true;
+			}
+		}
+		else
+		{
+			
+			if(car->speedMultiplier < 1)
+			{
+				accelerate = true;
+			}
+
+			//game.currentTrack.checkpointLayer
+			right = true;
+			
+		}
+		
+		if (accelerate && car->speedMultiplier < maxSpeed)
 		{
 			car->speedMultiplier += acceleration;
 			car->speedMultiplier = std::min(maxSpeed, car->speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
 		}
-		else if (car->speedMultiplier > 0 && !(buttons & Button::A))
+		else if (car->speedMultiplier > 0 && !accelerate)
 		{
 			car->speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			car->speedMultiplier = std::max(0.0f, car->speedMultiplier);
@@ -663,7 +700,7 @@ void updateCar(Actor* car)
 
 		if (car->inputDelay == 0)
 		{
-			if (buttons & Button::DPAD_RIGHT || joystick.x > 0) {
+			if (right) {
 				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
 				if (car->degrees == 360.0f)
@@ -675,7 +712,7 @@ void updateCar(Actor* car)
 					car->degrees += rotationIncrement;
 				}
 			}
-			else if (buttons & Button::DPAD_LEFT || joystick.x < 0) {
+			else if (left) {
 				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
 				if (car->degrees == 0.0f)
@@ -697,7 +734,7 @@ void updateCar(Actor* car)
 		newVector.x = newVector.x * car->speedMultiplier;
 		newVector.y = newVector.y * car->speedMultiplier;
 
-		car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
+		//car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
 
 		if (car->currentTileData.obstruction)
 		{
@@ -740,10 +777,6 @@ void update(uint32_t time) {
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
 
-	updateCar(game.PlayerCar);
-	
-	
-
 	switch (state)
 	{
 	case Menu:
@@ -763,6 +796,13 @@ void update(uint32_t time) {
 		{
 			debugMode = !debugMode;
 			debugTimer = 20;
+		}
+
+		updateCar(game.PlayerCar);
+
+		for (auto cpuCar : game.cpuCars)
+		{
+			updateCar(cpuCar);
 		}
 
 		update_camera(game.PlayerCar);
