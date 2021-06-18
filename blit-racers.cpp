@@ -27,8 +27,24 @@ float lastYValue = 0.0;
 
 bool debugMode = false;
 int8_t debugTimer = 0;
+float debugAngle;
 
 const uint8_t tileSize = 8;
+
+int32_t millisElapsed = 0;
+bool captureNodes = false;
+std::vector<Point> nodes;
+
+float calcAngleBetweenPoints(Point a, Point b)
+{
+	// calculate angle as radian from car to target node
+	float targetAngle = atan2(b.x - a.x, b.y - a.y);
+
+	// get angle in degrees
+	targetAngle = targetAngle * 180 / pi;
+
+	return targetAngle;
+}
 
 struct TileData
 {
@@ -65,6 +81,11 @@ public:
 	}
 };
 
+//struct Node {
+//	Point data;
+//	struct Node* next;
+//};
+
 class Track
 {
 public:
@@ -78,10 +99,11 @@ public:
 	TileMap checkpointLayer;
 
 	std::vector<Position> startLocations;
+	std::vector<Point> nodes;
 
 	Track() = default;
 	
-	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet, std::vector<Position> startLocations)
+	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet, std::vector<Position> startLocations, std::vector<Point> nodes)
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
@@ -89,7 +111,8 @@ public:
 		this->tileMapHeight = tileMapHeight;
 		this->tileMapWidth = tileMapWidth;
 		this->startLocations = std::move(startLocations);
-
+		this->nodes = std::move(nodes);
+		
 		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
@@ -136,6 +159,8 @@ public:
 
 	bool isPlayer = false;
 
+	uint8_t targetNode;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -147,12 +172,13 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position position, Rect spriteLocation, Size size, bool isPlayer = false)
+	Actor(Position position, Rect spriteLocation, Size size, uint8_t targetNode, bool isPlayer = false)
 	{
 		this->SetLocation(position);
 		this->spriteLocation = spriteLocation;
 		this->size = size;
 		this->isPlayer = isPlayer;
+		this->targetNode = targetNode;
 		movement = Vec2(0, 1);
 		this->GenerateSpriteMap(180);
 	}
@@ -216,7 +242,7 @@ enum TileScanType
 	Checkpoint
 };
 
-GameState state = Play;
+GameState state = Menu;
 Surface* backGroundSurface;
 Surface* menu0ss;
 Surface* menu1ss;
@@ -249,11 +275,36 @@ public:
 			{
 				Position(Point(270,480),180),
 				Position(Point(310,480),180),
+			}
+		,
+			{
+				/*Point(270,477),*/
+				Point(270, 440),
+				Point(270, 412),
+				Point(270, 346),
+				Point(286, 297),
+				Point(331,288),
+				Point(405, 287),
+				Point(486, 305),
+				Point(555, 334),
+				Point(636, 300),
+				Point(699,283),
+				Point(726, 319),
+				Point(720, 394),
+				Point(728, 477),
+				Point(692, 283),
+				Point(653,526),
+				Point(589, 550),
+				Point(498, 557),
+				Point(399, 548),
+				Point(302, 536),
+				Point(257,501),
+				Point(262, 469)
 			});
 
 		uint8_t gridPosition = 0;
 		
-		PlayerCar = new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), true);
+		PlayerCar = new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, true);
 		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
 
@@ -261,7 +312,7 @@ public:
 		{
 			if(currentTrack.startLocations.size() >= gridPosition + 1)
 			{
-				cpuCars.emplace_back(new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24)));
+				cpuCars.emplace_back(new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0));
 				gridPosition++;
 			}
 		}
@@ -527,7 +578,7 @@ void DrawGame()
 
 	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
-	backgroundSize.w = 40;
+	backgroundSize.w = 45;
 	
 	screen.pen = Pen(0, 0, 0, 128);
 	screen.rectangle(Rect(Point(0,0), backgroundSize));
@@ -550,15 +601,21 @@ void DrawGame()
 
 	if(debugMode)
 	{
-		//screen.text("Vec X: " + std::to_string(PlayerCar->movement.x), minimal_font, Point(0, 0));
-		//screen.text("Vec Y: " + std::to_string(PlayerCar->movement.y), minimal_font, Point(0, 10));
+		//screen.text("Vec X: " + std::to_string(game.PlayerCar->movement.x), minimal_font, Point(0, 0));
+		//screen.text("Vec Y: " + std::to_string(game.PlayerCar->movement.y), minimal_font, Point(0, 10));
 		//screen.text("V: " + std::to_string(PlayerCar->speedMultiplier), minimal_font, Point(0, 20));
 
 
-		//screen.text("d " + std::to_string(PlayerCar->degrees), minimal_font, Point(0, 30));
-		screen.text("X: " + std::to_string(int(game.PlayerCar->x)), minimal_font, Point(0, 40));
-		screen.text("Y: " + std::to_string(int(game.PlayerCar->y)), minimal_font, Point(0, 50));
-
+		screen.text("d " + std::to_string(game.cpuCars[0]->degrees), minimal_font, Point(0, 30));
+		//screen.text("X: " + std::to_string(int(game.cpuCars[0]->x)), minimal_font, Point(0, 40));
+		//screen.text("Y: " + std::to_string(int(game.cpuCars[0]->y)), minimal_font, Point(0, 50));
+		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].x), minimal_font, Point(0, 60));
+		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].y), minimal_font, Point(0, 70));
+		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
+		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
+		screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
+		screen.line(Point(static_cast<int>(game.cpuCars[0]->x), static_cast<int>(game.cpuCars[0]->y)), game.currentTrack.nodes[game.PlayerCar->targetNode]);
+		
 		std::string ids;
 
 		int i = 0;
@@ -574,7 +631,7 @@ void DrawGame()
 			}
 		}
 
-		screen.text("tiles: " + ids, minimal_font, Point(0, 80));
+		//screen.text("tiles: " + ids, minimal_font, Point(0, 80));
 
 		for (auto pointChecked : game.PlayerCar->currentTileData.pointsChecked)
 		{		
@@ -621,7 +678,6 @@ void render(uint32_t time) {
 		break;
 	}
 }
-
 
 void ApplyCarMovement(float radian, Vec2 newVector, Actor* car)
 {
@@ -676,14 +732,43 @@ void updateCar(Actor* car)
 		}
 		else
 		{
+			auto currentTarget = game.currentTrack.nodes[car->targetNode];
+
+			// calculate angle as radian from car to target node
+			float targetAngle = calcAngleBetweenPoints(Point(car->x, car->y), game.currentTrack.nodes[car->targetNode]);
+
+			// get angle in degrees
+			//targetAngle = targetAngle * 180 / pi;
+			targetAngle = targetAngle * -1;
+
+			
+			if(targetAngle < 0)
+			{
+				targetAngle = targetAngle * -1 * 2;
+			}
+
+
+			debugAngle = targetAngle;
+			
+			if(car->degrees > targetAngle && car->degrees - targetAngle <= 180)
+			{
+				left = true;
+			}
+			else if (car->degrees < targetAngle)
+			{
+				right = true;
+			}
 			
 			if(car->speedMultiplier < 1)
 			{
 				accelerate = true;
 			}
 
+			if(static_cast<int>(car->x) >= currentTarget.x - 20 && static_cast<int>(car->x) <= currentTarget.x + 20 && static_cast<int>(car->y) >= currentTarget.y - 20 && static_cast<int>(car->y) <= currentTarget.y + 20)
+			{
+				car->targetNode++;
+			}
 			//game.currentTrack.checkpointLayer
-			right = true;
 			
 		}
 		
@@ -730,7 +815,7 @@ void updateCar(Actor* car)
 
 		Vec2 newVector = Vec2(0, 1);
 		newVector.rotate(radian);
-
+		
 		newVector.x = newVector.x * car->speedMultiplier;
 		newVector.y = newVector.y * car->speedMultiplier;
 
@@ -758,10 +843,13 @@ void updateCar(Actor* car)
 				car->currentCheckpoint = 1;
 				car->completedLapTimes.emplace_back(car->lapTime);
 				car->lapTime = 0;
+				captureNodes = false;
+				
 			}
 		}
 	}
 }
+
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -776,6 +864,23 @@ void update(uint32_t time) {
 	uint16_t changed = blit::buttons ^ lastButtons;
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
+
+	/*calcAngleBetweenPoints(Point(0, 0), Point(0, 1));
+	calcAngleBetweenPoints(Point(0, 0), Point(0, 2));
+	calcAngleBetweenPoints(Point(0, 0), Point(1, 0));
+	calcAngleBetweenPoints(Point(0, 0), Point(-1, 0));
+	calcAngleBetweenPoints(Point(0, 0), Point(0, -1));*/
+
+
+
+	
+	millisElapsed += 10;
+
+	if(millisElapsed >= 500 && captureNodes)
+	{
+		millisElapsed = 0;
+		nodes.emplace_back(Point(game.PlayerCar->x, game.PlayerCar->y));
+	}
 
 	switch (state)
 	{
