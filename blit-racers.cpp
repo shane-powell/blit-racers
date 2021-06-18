@@ -134,6 +134,8 @@ public:
 
 	std::vector<uint32_t> completedLapTimes;
 
+	bool isPlayer = false;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -145,12 +147,12 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position position, Rect spriteLocation, Size size)
+	Actor(Position position, Rect spriteLocation, Size size, bool isPlayer = false)
 	{
 		this->SetLocation(position);
 		this->spriteLocation = spriteLocation;
 		this->size = size;
-
+		this->isPlayer = isPlayer;
 		movement = Vec2(0, 1);
 		this->GenerateSpriteMap(180);
 	}
@@ -238,6 +240,8 @@ public:
 	
 	Actor* PlayerCar;
 
+	uint8_t aiCount = 1;
+
 	Game()
 	{
 		// Load first track
@@ -247,9 +251,20 @@ public:
 				Position(Point(310,480),180),
 			});
 
-		PlayerCar = new Actor(currentTrack.startLocations[0], Rect(0, 0, 3, 3), Size(24, 24));
-
+		uint8_t gridPosition = 0;
+		
+		PlayerCar = new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), true);
+		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
+
+		for (int i = 0; i < aiCount; ++i)
+		{
+			if(currentTrack.startLocations.size() >= gridPosition + 1)
+			{
+				cpuCars.emplace_back(new Actor(currentTrack.startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24)));
+				gridPosition++;
+			}
+		}
 	}
 
 	Game(int8_t noPlayers)
@@ -483,7 +498,15 @@ void DrawCar(Actor* car)
 		}
 	}
 
-	screen.sprite(car->sprites[sprite], Point(maxX / 2 - (car->size.w / 2), maxY / 2 - (car->size.h / 2)));
+	if (car->isPlayer)
+	{
+		screen.sprite(car->sprites[sprite], Point(maxX / 2 - (car->size.w / 2), maxY / 2 - (car->size.h / 2)));
+	}
+	else
+	{
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game.PlayerCar->camera));
+	}
+
 }
 
 void DrawGame()
@@ -492,6 +515,11 @@ void DrawGame()
 
 	//screen.sprite(PlayerCar->spriteLocation, Point(PlayerCar->x, PlayerCar->y));
 
+	for (auto cpuCar : game.cpuCars)
+	{
+		DrawCar(cpuCar);
+	}
+	
 	DrawCar(game.PlayerCar);
 
 
