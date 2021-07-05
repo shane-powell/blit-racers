@@ -490,7 +490,8 @@ void init() {
 
 void DrawMenu()
 {
-
+	screen.pen = Pen(255, 255, 255, 255);
+	screen.text("Press Button A to start.", outline_font, Point(maxX / 2,maxY / 2), true, center_h);
 }
 
 
