@@ -26,7 +26,7 @@ float lastXValue = 0.0;
 float lastYValue = 0.0;
 
 bool debugMode = false;
-int8_t debugTimer = 0;
+int8_t buttonBounceTimer = 0;
 float debugAngle;
 
 const uint8_t tileSize = 8;
@@ -888,20 +888,27 @@ void update(uint32_t time) {
 	case Menu:
 		if (buttons & Button::A)
 		{
+			game = Game();
 			state = Play;
 		}
 		break;
 	case Play:
 
-		if(debugTimer > 0)
+		if(buttonBounceTimer > 0)
 		{
-			debugTimer--;
+			buttonBounceTimer--;
 		}
 
-		if(buttons & Button::X && debugTimer <= 0)
+		if(buttons & Button::X && buttonBounceTimer <= 0)
 		{
 			debugMode = !debugMode;
-			debugTimer = 20;
+			buttonBounceTimer = 20;
+		}
+
+		if (buttons & Button::Y && buttonBounceTimer <= 0)
+		{
+			state = Menu;
+			buttonBounceTimer = 20;
 		}
 
 		updateCar(game.PlayerCar);
