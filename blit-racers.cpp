@@ -41,7 +41,7 @@ std::vector<Point> nodes;
 float calcAngleBetweenPoints(Point a, Point b)
 {
 	// calculate angle as radian from car to target node
-	float targetAngle = atan2(b.x - a.x, b.y - a.y);
+	auto targetAngle = atan2(b.x - a.x, b.y - a.y);
 
 	// get angle in degrees
 	targetAngle = targetAngle * 180 / pi;
@@ -49,11 +49,13 @@ float calcAngleBetweenPoints(Point a, Point b)
 	targetAngle = targetAngle * -1;
 	
 
-	if (targetAngle < 0)
-	{
+	//if (targetAngle < 0)
+	//{
 		//targetAngle = targetAngle * -1 * 2;
-		targetAngle = 360 - (targetAngle * -1);
-	}
+		
+		//targetAngle = 360 - (targetAngle * -1);
+		targetAngle = ((int)(targetAngle + 360)) % 360;
+	//}
 
 	// Fix for screen
 	//targetAngle += 180;
@@ -326,7 +328,6 @@ public:
 			}
 		,
 			{
-				/*Point(270,477),*/
 				Point(270, 440),
 				Point(270, 412),
 				Point(270, 346),
@@ -340,7 +341,6 @@ public:
 				Point(726, 319),
 				Point(720, 394),
 				Point(728, 477),
-				Point(692, 283),
 				Point(653,526),
 				Point(589, 550),
 				Point(498, 557),
@@ -795,15 +795,24 @@ void updateCar(Actor* car)
 
 
 			debugAngle = targetAngle;
+
+			Vec2 oldVector = Vec2(0, 1);
+			oldVector.rotate((pi * car->degrees) / 180.00f);
+			Vec2 targetVector = Vec2(0, 1);
+			targetVector.rotate((pi * targetAngle) / 180.00f);
+
+			//auto cross = targetVector.cross(oldVector);
+
+			auto cross = targetVector.x * oldVector.y - targetVector.y * oldVector.x;
 			
-			if(car->degrees > targetAngle && car->degrees - targetAngle <= 180)
+			if(cross > 0)
 			{
 				left = true;
-			}
-			else if (car->degrees < targetAngle)
+			} else if (cross < 0)
 			{
 				right = true;
 			}
+			
 			
 			if(car->speedMultiplier < 1)
 			{
@@ -812,7 +821,14 @@ void updateCar(Actor* car)
 
 			if(static_cast<int>(car->x) >= currentTarget.x - 20 && static_cast<int>(car->x) <= currentTarget.x + 20 && static_cast<int>(car->y) >= currentTarget.y - 20 && static_cast<int>(car->y) <= currentTarget.y + 20)
 			{
-				car->targetNode++;
+				if(car->targetNode < game.currentTrack.nodes.size() - 1)
+				{
+					car->targetNode++;
+				}
+				else
+				{
+					car->targetNode = 0;
+				}
 			}
 			//game.currentTrack.checkpointLayer
 			
