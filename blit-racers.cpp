@@ -801,9 +801,9 @@ void updateCar(Actor* car)
 			Vec2 targetVector = Vec2(0, 1);
 			targetVector.rotate((pi * targetAngle) / 180.00f);
 
-			//auto cross = targetVector.cross(oldVector);
+			auto cross = targetVector.cross(oldVector);
 
-			auto cross = targetVector.x * oldVector.y - targetVector.y * oldVector.x;
+			//auto cross = targetVector.x * oldVector.y - targetVector.y * oldVector.x;
 			
 			if(cross > 0)
 			{
