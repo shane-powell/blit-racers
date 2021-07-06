@@ -49,48 +49,9 @@ float calcAngleBetweenPoints(Point a, Point b)
 	targetAngle = targetAngle * -1;
 	
 
-	//if (targetAngle < 0)
-	//{
-		//targetAngle = targetAngle * -1 * 2;
-		
-		//targetAngle = 360 - (targetAngle * -1);
-		targetAngle = ((int)(targetAngle + 360)) % 360;
-	//}
-
-	// Fix for screen
-	//targetAngle += 180;
-
-	//if(targetAngle >= 360)
-	//{
-	//	targetAngle = 0;
-	//}
-
-	return targetAngle;
-}
-
-float calcAngleBetweenPoints2(Point centerPoint, Point a)
-{
-	auto vector = Vec2(centerPoint.x - a.x, centerPoint.y - a.y);
-	vector.normalize();
-	//auto length = sqrt(v.x * v.x + v.y * v.y);
-
-	//// normalize vector
-	//v.x /= length;
-	//v.y /= length;
-
-	// calculate angle as radian from car to target node
-	float targetAngle = atan2(vector.x, vector.y);
-
-	// get angle in degrees
-	targetAngle = targetAngle * 180 / pi;
-
-
-	// Fix for screen
-	targetAngle += 180;
-
-	if (targetAngle >= 360)
+	if (targetAngle < 0)
 	{
-		targetAngle = 0;
+		targetAngle += 360;
 	}
 
 	return targetAngle;
@@ -802,8 +763,6 @@ void updateCar(Actor* car)
 			targetVector.rotate((pi * targetAngle) / 180.00f);
 
 			auto cross = targetVector.cross(oldVector);
-
-			//auto cross = targetVector.x * oldVector.y - targetVector.y * oldVector.x;
 			
 			if(cross > 0)
 			{
