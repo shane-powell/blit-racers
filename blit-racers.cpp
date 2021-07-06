@@ -615,8 +615,7 @@ void DrawGame()
 		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
 		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
 		screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
-		screen.line(Point(static_cast<int>(game.cpuCars[0]->x), static_cast<int>(game.cpuCars[0]->y)), game.currentTrack.nodes[game.PlayerCar->targetNode]);
-		
+		screen.line(worldToScreen(Point(static_cast<int>(game.cpuCars[0]->x), static_cast<int>(game.cpuCars[0]->y)), game.PlayerCar->camera), worldToScreen(game.currentTrack.nodes[game.cpuCars[0]->targetNode], game.PlayerCar->camera));
 		std::string ids;
 
 		int i = 0;
