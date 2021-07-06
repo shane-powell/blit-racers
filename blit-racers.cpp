@@ -2,6 +2,7 @@
 #include "assets.hpp"
 #include <limits>
 #include <algorithm>
+#include <iostream>
 #include <map>
 #include <utility>
 using namespace blit;
@@ -35,6 +36,8 @@ int32_t millisElapsed = 0;
 bool captureNodes = false;
 std::vector<Point> nodes;
 
+
+
 float calcAngleBetweenPoints(Point a, Point b)
 {
 	// calculate angle as radian from car to target node
@@ -42,6 +45,51 @@ float calcAngleBetweenPoints(Point a, Point b)
 
 	// get angle in degrees
 	targetAngle = targetAngle * 180 / pi;
+
+	targetAngle = targetAngle * -1;
+	
+
+	if (targetAngle < 0)
+	{
+		//targetAngle = targetAngle * -1 * 2;
+		targetAngle = 360 - (targetAngle * -1);
+	}
+
+	// Fix for screen
+	//targetAngle += 180;
+
+	//if(targetAngle >= 360)
+	//{
+	//	targetAngle = 0;
+	//}
+
+	return targetAngle;
+}
+
+float calcAngleBetweenPoints2(Point centerPoint, Point a)
+{
+	auto vector = Vec2(centerPoint.x - a.x, centerPoint.y - a.y);
+	vector.normalize();
+	//auto length = sqrt(v.x * v.x + v.y * v.y);
+
+	//// normalize vector
+	//v.x /= length;
+	//v.y /= length;
+
+	// calculate angle as radian from car to target node
+	float targetAngle = atan2(vector.x, vector.y);
+
+	// get angle in degrees
+	targetAngle = targetAngle * 180 / pi;
+
+
+	// Fix for screen
+	targetAngle += 180;
+
+	if (targetAngle >= 360)
+	{
+		targetAngle = 0;
+	}
 
 	return targetAngle;
 }
@@ -612,10 +660,10 @@ void DrawGame()
 		//screen.text("Y: " + std::to_string(int(game.cpuCars[0]->y)), minimal_font, Point(0, 50));
 		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].x), minimal_font, Point(0, 60));
 		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].y), minimal_font, Point(0, 70));
-		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
-		screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
-		screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
-		screen.line(worldToScreen(Point(static_cast<int>(game.cpuCars[0]->x), static_cast<int>(game.cpuCars[0]->y)), game.PlayerCar->camera), worldToScreen(game.currentTrack.nodes[game.cpuCars[0]->targetNode], game.PlayerCar->camera));
+		//screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
+		//screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
+		//screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
+		screen.line(worldToScreen(Point(static_cast<int>(game.cpuCars[0]->x + game.cpuCars[0]->size.w /2), static_cast<int>(game.cpuCars[0]->y + game.cpuCars[0]->size.h / 2)), game.PlayerCar->camera), worldToScreen(game.currentTrack.nodes[game.cpuCars[0]->targetNode], game.PlayerCar->camera));
 		std::string ids;
 
 		int i = 0;
@@ -734,18 +782,16 @@ void updateCar(Actor* car)
 		{
 			auto currentTarget = game.currentTrack.nodes[car->targetNode];
 
-			// calculate angle as radian from car to target node
-			float targetAngle = calcAngleBetweenPoints(Point(car->x, car->y), game.currentTrack.nodes[car->targetNode]);
+			float targetAngle = calcAngleBetweenPoints(Point(car->x + car->size.w / 2, car->y + car->size.h / 2), game.currentTrack.nodes[car->targetNode]);
 
-			// get angle in degrees
-			//targetAngle = targetAngle * 180 / pi;
-			targetAngle = targetAngle * -1;
+			////targetAngle = targetAngle * 180 / pi;
+			//targetAngle = targetAngle * -1;
 
-			
-			if(targetAngle < 0)
-			{
-				targetAngle = targetAngle * -1 * 2;
-			}
+			//
+			//if(targetAngle < 0)
+			//{
+			//	targetAngle = targetAngle * -1 * 2;
+			//}
 
 
 			debugAngle = targetAngle;
@@ -865,11 +911,17 @@ void update(uint32_t time) {
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
 
-	/*calcAngleBetweenPoints(Point(0, 0), Point(0, 1));
-	calcAngleBetweenPoints(Point(0, 0), Point(0, 2));
-	calcAngleBetweenPoints(Point(0, 0), Point(1, 0));
-	calcAngleBetweenPoints(Point(0, 0), Point(-1, 0));
-	calcAngleBetweenPoints(Point(0, 0), Point(0, -1));*/
+
+	//auto down = calcAngleBetweenPoints(Point(0, 0), Point(0, 1));
+	//auto down2 = calcAngleBetweenPoints(Point(0, 0), Point(0, 2));
+	//auto right = calcAngleBetweenPoints(Point(0, 0), Point(1, 0));
+	//auto left = calcAngleBetweenPoints(Point(0, 0), Point(-1, 0));
+	//auto up = calcAngleBetweenPoints(Point(0, 0), Point(0, -1));
+
+	//auto downRight = calcAngleBetweenPoints(Point(0, 0), Point(1, 1));
+	//auto downRight2 = calcAngleBetweenPoints(Point(0, 0), Point(200, 200));
+	//auto downLeft = calcAngleBetweenPoints(Point(0, 0), Point(-1, 1));
+	//auto hmm = calcAngleBetweenPoints2(Point(123, 109), Point(405, 287));
 
 
 
