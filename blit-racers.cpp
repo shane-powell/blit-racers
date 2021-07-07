@@ -41,10 +41,10 @@ std::vector<Point> nodes;
 float calcAngleBetweenPoints(Point a, Point b)
 {
 	// calculate angle as radian from car to target node
-	auto targetAngle = atan2(b.x - a.x, b.y - a.y);
+	float targetAngle = atan2(b.x - a.x, b.y - a.y);
 
 	// get angle in degrees
-	targetAngle = targetAngle * 180 / pi;
+	targetAngle = targetAngle * 180.00f / pi;
 
 	targetAngle = targetAngle * -1;
 	
