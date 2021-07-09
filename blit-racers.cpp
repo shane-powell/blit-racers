@@ -101,20 +101,35 @@ class Track
 {
 public:
 	uint8_t checkpointCount = 0;
-	uint8_t * mapTiles;
-	uint8_t * mapSpiteSheet;
+	const uint8_t * mapTiles;
+	const uint8_t * mapSpiteSheet;
 	uint32_t tileMapHeight = NULL;
 	uint32_t tileMapWidth = NULL;
 	TileMap world;
 	TileMap objectsLayer;
 	TileMap checkpointLayer;
+	const uint8_t* image;
+	std::string title;
 
 	std::vector<Position> startLocations;
+
+	// todo split linked list for multiple paths
 	std::vector<Point> nodes;
 
 	Track() = default;
 	
-	Track(uint8_t checkpointCount, uint8_t * mapTiles, uint8_t * mapSpiteSheet, uint32_t tileMapHeight, uint32_t tileMapWidth, uint8_t* worldLayerSheet, uint8_t* objectsLayerSheet, uint8_t* checkpointLayerSheet, std::vector<Position> startLocations, std::vector<Point> nodes)
+	Track(const uint8_t checkpointCount, 
+		const uint8_t * mapTiles, 
+		const uint8_t * mapSpiteSheet,
+		const uint32_t tileMapHeight,
+		const uint32_t tileMapWidth,
+		const uint8_t* worldLayerSheet, 
+		uint8_t* objectsLayerSheet, 
+		uint8_t* checkpointLayerSheet, 
+		std::vector<Position> startLocations, 
+		std::vector<Point> nodes, 
+		uint8_t * image,
+	    std::string title)
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
@@ -123,7 +138,8 @@ public:
 		this->tileMapWidth = tileMapWidth;
 		this->startLocations = std::move(startLocations);
 		this->nodes = std::move(nodes);
-		
+		this->image = image;
+		this->title = std::move(title);
 		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
@@ -244,7 +260,8 @@ enum PlayerState
 enum GameState {
 	Menu,
 	Play,
-	GameOver
+	GameOver,
+	LevelSelect
 };
 
 enum TileScanType
@@ -309,7 +326,7 @@ public:
 				Point(302, 536),
 				Point(257,501),
 				Point(262, 469)
-			});
+			}, const_cast<uint8_t*>(map1_preview), "Kitchen");
 
 		uint8_t gridPosition = 0;
 		
@@ -503,16 +520,20 @@ void DrawMenu()
 	screen.text("Press Button A to start.", outline_font, Point(maxX / 2,maxY / 2), true, center_h);
 }
 
+void DrawLevelSelect()
+{
+	screen.pen = Pen(255, 255, 255, 255);
+	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
+	screen.sprites = Surface::load(game.currentTrack.image);
+	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
+	screen.text(game.currentTrack.title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
+
+}
+
 
 
 void DrawWorld()
 {
-	/*const Vec2 wo(worldX, worldY);
-
-	world.transform =
-		Mat3::identity() *
-		Mat3::translation(wo);*/
-
 	game.currentTrack.world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	game.currentTrack.objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
@@ -616,7 +637,7 @@ void DrawGame()
 		//screen.text("V: " + std::to_string(PlayerCar->speedMultiplier), minimal_font, Point(0, 20));
 
 
-		screen.text("d " + std::to_string(game.cpuCars[0]->degrees), minimal_font, Point(0, 30));
+		//screen.text("d " + std::to_string(game.cpuCars[0]->degrees), minimal_font, Point(0, 30));
 		//screen.text("X: " + std::to_string(int(game.cpuCars[0]->x)), minimal_font, Point(0, 40));
 		//screen.text("Y: " + std::to_string(int(game.cpuCars[0]->y)), minimal_font, Point(0, 50));
 		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].x), minimal_font, Point(0, 60));
@@ -678,6 +699,9 @@ void render(uint32_t time) {
 	{
 	case Menu:
 		DrawMenu();
+		break;
+	case LevelSelect:
+		DrawLevelSelect();
 		break;
 	case Play:
 		DrawGame();
@@ -899,7 +923,10 @@ void update(uint32_t time) {
 	//auto hmm = calcAngleBetweenPoints2(Point(123, 109), Point(405, 287));
 
 
-
+	if (buttonBounceTimer > 0)
+	{
+		buttonBounceTimer--;
+	}
 	
 	millisElapsed += 10;
 
@@ -912,19 +939,21 @@ void update(uint32_t time) {
 	switch (state)
 	{
 	case Menu:
-		if (buttons & Button::A)
+		if (buttons & Button::A && buttonBounceTimer <= 0)
+		{
+			state = LevelSelect;
+			buttonBounceTimer = 20;
+		}
+		break;
+	case LevelSelect:
+		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
 			game = Game();
+			screen.sprites = Surface::load(car1);
 			state = Play;
 		}
 		break;
 	case Play:
-
-		if(buttonBounceTimer > 0)
-		{
-			buttonBounceTimer--;
-		}
-
 		if(buttons & Button::X && buttonBounceTimer <= 0)
 		{
 			debugMode = !debugMode;

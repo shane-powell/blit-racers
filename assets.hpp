@@ -11,5 +11,8 @@ extern const uint32_t car1_length;
 extern const uint8_t tile_sheet_1[];
 extern const uint32_t tile_sheet_1_length;
 
+extern const uint8_t map1_preview[];
+extern const uint32_t map1_preview_length;
+
 extern const uint8_t map1[];
 extern const uint32_t map1_length;

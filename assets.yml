@@ -5,5 +5,7 @@ assets.cpp:
         name: car1
     assets/tile-sheet1.png:
         name: tile_sheet_1
+    assets/map1.png:
+        name: map1_preview
     assets/maps/map1.tmx:
         name: map1  
