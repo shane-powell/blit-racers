@@ -294,7 +294,7 @@ public:
 	
 	Actor* PlayerCar;
 
-	uint8_t aiCount = 1;
+	uint8_t aiCount = 3;
 
 	Game()
 	{
@@ -302,7 +302,9 @@ public:
 		currentTrack = Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
 			{
 				Position(Point(270,480),180),
-				Position(Point(310,480),180),
+				Position(Point(305,480),180),
+				Position(Point(270,520),180),
+				Position(Point(310,520),180)
 			}
 		,
 			{
