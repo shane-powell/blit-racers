@@ -384,7 +384,7 @@ uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_ma
 	return array_location;
 }
 
-Game game;
+Game * game;
 
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
@@ -530,9 +530,9 @@ void DrawLevelSelect()
 {
 	screen.pen = Pen(255, 255, 255, 255);
 	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
-	screen.sprites = Surface::load(game.currentTrack.image);
+	screen.sprites = Surface::load(game->currentTrack.image);
 	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
-	screen.text(game.currentTrack.title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
+	screen.text(game->currentTrack.title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
 
 }
 
@@ -540,12 +540,12 @@ void DrawLevelSelect()
 
 void DrawWorld()
 {
-	game.currentTrack.world->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
-	game.currentTrack.objectsLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game->currentTrack.world->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game->currentTrack.objectsLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 	if(debugMode)
 	{
-		game.currentTrack.checkpointLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+		game->currentTrack.checkpointLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	}
 
 }
@@ -592,7 +592,7 @@ void DrawCar(Actor* car)
 	}
 	else
 	{
-		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game.PlayerCar->camera));
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
 	}
 
 }
@@ -603,15 +603,15 @@ void DrawGame()
 
 	//screen.sprite(PlayerCar->spriteLocation, Point(PlayerCar->x, PlayerCar->y));
 
-	for (auto cpuCar : game.cpuCars)
+	for (auto cpuCar : game->cpuCars)
 	{
 		DrawCar(cpuCar);
 	}
 	
-	DrawCar(game.PlayerCar);
+	DrawCar(game->PlayerCar);
 
 
-	const std::string curLapText = GetLapTimeString(game.PlayerCar->lapTime);
+	const std::string curLapText = GetLapTimeString(game->PlayerCar->lapTime);
 
 	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
@@ -625,7 +625,7 @@ void DrawGame()
 	uint32_t lapNumber = 1;
 	
 	
-	for (auto completed_lap_time : game.PlayerCar->completedLapTimes)
+	for (auto completed_lap_time : game->PlayerCar->completedLapTimes)
 	{	
 		auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
 		backgroundSize = screen.measure_text(lapTimeString, minimal_font);
@@ -638,25 +638,25 @@ void DrawGame()
 
 	if(debugMode)
 	{
-		//screen.text("Vec X: " + std::to_string(game.PlayerCar->movement.x), minimal_font, Point(0, 0));
-		//screen.text("Vec Y: " + std::to_string(game.PlayerCar->movement.y), minimal_font, Point(0, 10));
+		//screen.text("Vec X: " + std::to_string(game->PlayerCar->movement.x), minimal_font, Point(0, 0));
+		//screen.text("Vec Y: " + std::to_string(game->PlayerCar->movement.y), minimal_font, Point(0, 10));
 		//screen.text("V: " + std::to_string(PlayerCar->speedMultiplier), minimal_font, Point(0, 20));
 
 
-		//screen.text("d " + std::to_string(game.cpuCars[0]->degrees), minimal_font, Point(0, 30));
-		//screen.text("X: " + std::to_string(int(game.cpuCars[0]->x)), minimal_font, Point(0, 40));
-		//screen.text("Y: " + std::to_string(int(game.cpuCars[0]->y)), minimal_font, Point(0, 50));
-		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].x), minimal_font, Point(0, 60));
-		//screen.text(std::to_string(game.currentTrack.nodes[game.PlayerCar->targetNode].y), minimal_font, Point(0, 70));
-		//screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
-		//screen.text(std::to_string(game.currentTrack.nodes[game.cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
+		//screen.text("d " + std::to_string(game->cpuCars[0]->degrees), minimal_font, Point(0, 30));
+		//screen.text("X: " + std::to_string(int(game->cpuCars[0]->x)), minimal_font, Point(0, 40));
+		//screen.text("Y: " + std::to_string(int(game->cpuCars[0]->y)), minimal_font, Point(0, 50));
+		//screen.text(std::to_string(game->currentTrack.nodes[game->PlayerCar->targetNode].x), minimal_font, Point(0, 60));
+		//screen.text(std::to_string(game->currentTrack.nodes[game->PlayerCar->targetNode].y), minimal_font, Point(0, 70));
+		//screen.text(std::to_string(game->currentTrack.nodes[game->cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
+		//screen.text(std::to_string(game->currentTrack.nodes[game->cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
 		//screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
-		screen.line(worldToScreen(Point(static_cast<int>(game.cpuCars[0]->x + game.cpuCars[0]->size.w /2), static_cast<int>(game.cpuCars[0]->y + game.cpuCars[0]->size.h / 2)), game.PlayerCar->camera), worldToScreen(game.currentTrack.nodes[game.cpuCars[0]->targetNode], game.PlayerCar->camera));
+		screen.line(worldToScreen(Point(static_cast<int>(game->cpuCars[0]->x + game->cpuCars[0]->size.w /2), static_cast<int>(game->cpuCars[0]->y + game->cpuCars[0]->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack.nodes[game->cpuCars[0]->targetNode], game->PlayerCar->camera));
 		std::string ids;
 
 		int i = 0;
 		
-		for (auto tile : game.PlayerCar->currentTileData.tilesScanned)
+		for (auto tile : game->PlayerCar->currentTileData.tilesScanned)
 		{
 			i++;
 			ids.append(std::to_string(tile.second.id) + " (" + std::to_string(tile.second.detectionCount) + ") ");
@@ -669,10 +669,10 @@ void DrawGame()
 
 		//screen.text("tiles: " + ids, minimal_font, Point(0, 80));
 
-		for (auto pointChecked : game.PlayerCar->currentTileData.pointsChecked)
+		for (auto pointChecked : game->PlayerCar->currentTileData.pointsChecked)
 		{		
 			screen.pen = Pen(0, 255, 0, 50);
-			screen.pixel(worldToScreen(pointChecked, game.PlayerCar->camera));
+			screen.pixel(worldToScreen(pointChecked, game->PlayerCar->camera));
 		}
 
 		screen.pen = Pen(255, 0, 0);
@@ -684,13 +684,15 @@ void DrawGame()
 
 void DrawGameOver()
 {
+	screen.pen = Pen(255, 255, 255, 255);
+	screen.text("Someone won.", outline_font, Point(maxX / 2, maxY / 2), true, center_h);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //
 // render(time)
 //
-// This function is called to perform rendering of the game. time is the 
+// This function is called to perform rendering of the game-> time is the 
 // amount if milliseconds elapsed since the start of your game
 //
 void render(uint32_t time) {
@@ -744,84 +746,86 @@ void updateCar(Actor* car)
 	}
 
 	// Get scan data up front so AI can decide what to do
-	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer->tiles, Collision);
+	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack.objectsLayer->tiles, Collision);
 
-	if (car->moveEnabled)
-	{
+	
 		bool accelerate = false;
 		bool left = false;
 		bool right = false;
-		
-		if(car->isPlayer)
+
+		if (car->moveEnabled)
 		{
-			if (buttons & Button::A)
+			if (car->isPlayer)
 			{
-				accelerate = true;
-			}
-
-			if (buttons & Button::DPAD_RIGHT || joystick.x > 0)
-			{
-				right = true;
-			}
-			else if (buttons & Button::DPAD_LEFT || joystick.x < 0)
-			{
-				left = true;
-			}
-		}
-		else
-		{
-			auto currentTarget = game.currentTrack.nodes[car->targetNode];
-
-			float targetAngle = calcAngleBetweenPoints(Point(car->x + car->size.w / 2, car->y + car->size.h / 2), game.currentTrack.nodes[car->targetNode]);
-
-			////targetAngle = targetAngle * 180 / pi;
-			//targetAngle = targetAngle * -1;
-
-			//
-			//if(targetAngle < 0)
-			//{
-			//	targetAngle = targetAngle * -1 * 2;
-			//}
-
-
-			debugAngle = targetAngle;
-
-			Vec2 oldVector = Vec2(0, 1);
-			oldVector.rotate((pi * car->degrees) / 180.00f);
-			Vec2 targetVector = Vec2(0, 1);
-			targetVector.rotate((pi * targetAngle) / 180.00f);
-
-			auto cross = targetVector.cross(oldVector);
-			
-			if(cross > 0)
-			{
-				left = true;
-			} else if (cross < 0)
-			{
-				right = true;
-			}
-			
-			
-			if(car->speedMultiplier < 1)
-			{
-				accelerate = true;
-			}
-
-			if(static_cast<int>(car->x) >= currentTarget.x - 20 && static_cast<int>(car->x) <= currentTarget.x + 20 && static_cast<int>(car->y) >= currentTarget.y - 20 && static_cast<int>(car->y) <= currentTarget.y + 20)
-			{
-				if(car->targetNode < game.currentTrack.nodes.size() - 1)
+				if (buttons & Button::A)
 				{
-					car->targetNode++;
+					accelerate = true;
 				}
-				else
+
+				if (buttons & Button::DPAD_RIGHT || joystick.x > 0)
 				{
-					car->targetNode = 0;
+					right = true;
+				}
+				else if (buttons & Button::DPAD_LEFT || joystick.x < 0)
+				{
+					left = true;
 				}
 			}
-			//game.currentTrack.checkpointLayer
-			
+			else
+			{
+				auto currentTarget = game->currentTrack.nodes[car->targetNode];
+
+				float targetAngle = calcAngleBetweenPoints(Point(car->x + car->size.w / 2, car->y + car->size.h / 2), game->currentTrack.nodes[car->targetNode]);
+
+				////targetAngle = targetAngle * 180 / pi;
+				//targetAngle = targetAngle * -1;
+
+				//
+				//if(targetAngle < 0)
+				//{
+				//	targetAngle = targetAngle * -1 * 2;
+				//}
+
+
+				debugAngle = targetAngle;
+
+				Vec2 oldVector = Vec2(0, 1);
+				oldVector.rotate((pi * car->degrees) / 180.00f);
+				Vec2 targetVector = Vec2(0, 1);
+				targetVector.rotate((pi * targetAngle) / 180.00f);
+
+				auto cross = targetVector.cross(oldVector);
+
+				if (cross > 0)
+				{
+					left = true;
+				}
+				else if (cross < 0)
+				{
+					right = true;
+				}
+
+
+				if (car->speedMultiplier < 1)
+				{
+					accelerate = true;
+				}
+
+				if (static_cast<int>(car->x) >= currentTarget.x - 20 && static_cast<int>(car->x) <= currentTarget.x + 20 && static_cast<int>(car->y) >= currentTarget.y - 20 && static_cast<int>(car->y) <= currentTarget.y + 20)
+				{
+					if (car->targetNode < game->currentTrack.nodes.size() - 1)
+					{
+						car->targetNode++;
+					}
+					else
+					{
+						car->targetNode = 0;
+					}
+				}
+				//game->currentTrack.checkpointLayer
+
+			}
 		}
-		
 		if (accelerate && car->speedMultiplier < maxSpeed)
 		{
 			car->speedMultiplier += acceleration;
@@ -869,7 +873,7 @@ void updateCar(Actor* car)
 		newVector.x = newVector.x * car->speedMultiplier;
 		newVector.y = newVector.y * car->speedMultiplier;
 
-		//car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
+		//car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack.objectsLayer.tiles, Collision);
 
 		if (car->currentTileData.obstruction)
 		{
@@ -880,7 +884,7 @@ void updateCar(Actor* car)
 
 		ApplyCarMovement(radian, newVector, car);
 
-		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer->tiles, Checkpoint);
+		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack.checkpointLayer->tiles, Checkpoint);
 
 		for (auto tiles_scanned : checkPointScan.tilesScanned)
 		{
@@ -888,20 +892,24 @@ void updateCar(Actor* car)
 			{
 				car->currentCheckpoint++;
 			}
-			else if (car->currentCheckpoint == game.currentTrack.checkpointCount && tiles_scanned.second.id == 1)
+			else if (car->currentCheckpoint == game->currentTrack.checkpointCount && tiles_scanned.second.id == 1)
 			{
 				car->currentCheckpoint = 1;
 				car->completedLapTimes.emplace_back(car->lapTime);
 				car->lapTime = 0;
 				captureNodes = false;
 
-				if(car->completedLapTimes.size() >= game.currentTrack.laps)
+				if(car->completedLapTimes.size() >= game->currentTrack.laps)
 				{
-					state = GameOver;
+					car->moveEnabled = false;
+					if (car->isPlayer)
+					{
+						buttonBounceTimer = 50;
+						state = GameOver;
+					}	
 				}
 			}
 		}
-	}
 }
 
 
@@ -942,7 +950,7 @@ void update(uint32_t time) {
 	if(millisElapsed >= 500 && captureNodes)
 	{
 		millisElapsed = 0;
-		nodes.emplace_back(Point(game.PlayerCar->x, game.PlayerCar->y));
+		nodes.emplace_back(Point(game->PlayerCar->x, game->PlayerCar->y));
 	}
 
 	switch (state)
@@ -950,6 +958,7 @@ void update(uint32_t time) {
 	case Menu:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
+			game = new Game();
 			state = LevelSelect;
 			buttonBounceTimer = 20;
 		}
@@ -957,7 +966,6 @@ void update(uint32_t time) {
 	case LevelSelect:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
-			game = Game();
 			screen.sprites = Surface::load(car1);
 			state = Play;
 		}
@@ -975,19 +983,19 @@ void update(uint32_t time) {
 			buttonBounceTimer = 20;
 		}
 
-		updateCar(game.PlayerCar);
+		updateCar(game->PlayerCar);
 
-		for (auto cpuCar : game.cpuCars)
+		for (auto cpuCar : game->cpuCars)
 		{
 			updateCar(cpuCar);
 		}
 
-		update_camera(game.PlayerCar);
+		update_camera(game->PlayerCar);
 		break;
 	case GameOver:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
-			state = LevelSelect;
+			state = Menu;
 			buttonBounceTimer = 20;
 		}
 		break;
