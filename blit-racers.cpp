@@ -116,6 +116,8 @@ public:
 	// todo split linked list for multiple paths
 	std::vector<Point> nodes;
 
+	uint8_t laps = 3;
+
 	Track() = default;
 	
 	Track(const uint8_t checkpointCount, 
@@ -129,7 +131,8 @@ public:
 		std::vector<Position> startLocations, 
 		std::vector<Point> nodes, 
 		uint8_t * image,
-	    std::string title)
+	    std::string title,
+		uint8_t laps = 3)
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
@@ -140,6 +143,7 @@ public:
 		this->nodes = std::move(nodes);
 		this->image = image;
 		this->title = std::move(title);
+		this->laps = laps;
 		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
@@ -891,7 +895,11 @@ void updateCar(Actor* car)
 				car->completedLapTimes.emplace_back(car->lapTime);
 				car->lapTime = 0;
 				captureNodes = false;
-				
+
+				if(car->completedLapTimes.size() >= game.currentTrack.laps)
+				{
+					state = GameOver;
+				}
 			}
 		}
 	}
@@ -978,6 +986,11 @@ void update(uint32_t time) {
 		update_camera(game.PlayerCar);
 		break;
 	case GameOver:
+		if (buttons & Button::A && buttonBounceTimer <= 0)
+		{
+			state = LevelSelect;
+			buttonBounceTimer = 20;
+		}
 		break;
 	}
 
