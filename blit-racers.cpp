@@ -105,9 +105,9 @@ public:
 	const uint8_t * mapSpiteSheet;
 	uint32_t tileMapHeight = NULL;
 	uint32_t tileMapWidth = NULL;
-	TileMap world;
-	TileMap objectsLayer;
-	TileMap checkpointLayer;
+	TileMap *world;
+	TileMap *objectsLayer;
+	TileMap *checkpointLayer;
 	const uint8_t* image;
 	std::string title;
 
@@ -144,17 +144,17 @@ public:
 		this->image = image;
 		this->title = std::move(title);
 		this->laps = laps;
-		world = TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+		world = new TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
-		objectsLayer = TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+		objectsLayer = new TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto checkpointLayerStart = map1 + ((tileMapHeight * tileMapWidth) * 2);
-		checkpointLayer = TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+		checkpointLayer = new TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
-		world.sprites = Surface::load(worldLayerSheet);
-		objectsLayer.sprites = Surface::load(objectsLayerSheet);
-		checkpointLayer.sprites = Surface::load(checkpointLayerSheet);
+		world->sprites = Surface::load(worldLayerSheet);
+		objectsLayer->sprites = Surface::load(objectsLayerSheet);
+		checkpointLayer->sprites = Surface::load(checkpointLayerSheet);
 	}
 };
 
@@ -540,12 +540,12 @@ void DrawLevelSelect()
 
 void DrawWorld()
 {
-	game.currentTrack.world.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
-	game.currentTrack.objectsLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game.currentTrack.world->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+	game.currentTrack.objectsLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 
 	if(debugMode)
 	{
-		game.currentTrack.checkpointLayer.draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
+		game.currentTrack.checkpointLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	}
 
 }
@@ -744,8 +744,7 @@ void updateCar(Actor* car)
 	}
 
 	// Get scan data up front so AI can decide what to do
-	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer.tiles, Collision);
-
+	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.objectsLayer->tiles, Collision);
 
 	if (car->moveEnabled)
 	{
@@ -881,7 +880,7 @@ void updateCar(Actor* car)
 
 		ApplyCarMovement(radian, newVector, car);
 
-		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer.tiles, Checkpoint);
+		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game.currentTrack.checkpointLayer->tiles, Checkpoint);
 
 		for (auto tiles_scanned : checkPointScan.tilesScanned)
 		{
