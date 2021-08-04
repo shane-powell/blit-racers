@@ -384,7 +384,7 @@ uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_ma
 	return array_location;
 }
 
-Game * game;
+Game * game = new Game();
 
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
@@ -958,7 +958,7 @@ void update(uint32_t time) {
 	case Menu:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
-			game = new Game();
+			//game = new Game();
 			state = LevelSelect;
 			buttonBounceTimer = 20;
 		}
