@@ -108,7 +108,7 @@ public:
 	TileMap *world{};
 	TileMap *objectsLayer{};
 	TileMap *checkpointLayer{};
-	const uint8_t* image{};
+	Surface *image;
 	std::string title;
 
 	std::vector<Position> startLocations;
@@ -141,7 +141,7 @@ public:
 		this->tileMapWidth = tileMapWidth;
 		this->startLocations = std::move(startLocations);
 		this->nodes = std::move(nodes);
-		this->image = image;
+		this->image = Surface::load(image);
 		this->title = std::move(title);
 		this->laps = laps;
 		world = new TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
@@ -162,6 +162,7 @@ public:
 		delete world;
 		delete objectsLayer;
 		delete checkpointLayer;
+		delete image;
 	}
 };
 
@@ -543,7 +544,7 @@ void DrawLevelSelect()
 {
 	screen.pen = Pen(255, 255, 255, 255);
 	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
-	screen.sprites = Surface::load(game->currentTrack->image);
+	screen.sprites = game->currentTrack->image;
 	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
 	screen.text(game->currentTrack->title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
 
