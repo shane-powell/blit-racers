@@ -159,9 +159,23 @@ public:
 
 	~Track()
 	{
+		delete[] world->sprites->data;
+		delete[] world->sprites->palette;
+		delete world->sprites;
 		delete world;
+
+		delete[] objectsLayer->sprites->data;
+		delete[] objectsLayer->sprites->palette;
+		delete objectsLayer->sprites;
 		delete objectsLayer;
+
+		delete[] checkpointLayer->sprites->data;
+		delete[] checkpointLayer->sprites->palette;
+		delete checkpointLayer->sprites;
 		delete checkpointLayer;
+
+		delete image->data;
+		delete image->palette;
 		delete image;
 	}
 };
