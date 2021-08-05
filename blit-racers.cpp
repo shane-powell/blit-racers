@@ -270,7 +270,7 @@ enum PlayerState
 };
 
 enum GameState {
-	Menu,
+	MainMenu,
 	Play,
 	GameOver,
 	LevelSelect
@@ -282,7 +282,7 @@ enum TileScanType
 	Checkpoint
 };
 
-GameState state = Menu;
+GameState state = MainMenu;
 Surface* backGroundSurface;
 Surface* menu0ss;
 Surface* menu1ss;
@@ -719,7 +719,7 @@ void render(uint32_t time) {
 
 	switch (state)
 	{
-	case Menu:
+	case MainMenu:
 		DrawMenu();
 		break;
 	case LevelSelect:
@@ -969,7 +969,7 @@ void update(uint32_t time) {
 
 	switch (state)
 	{
-	case Menu:
+	case MainMenu:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
 			delete game;
@@ -995,7 +995,7 @@ void update(uint32_t time) {
 
 		if (buttons & Button::Y && buttonBounceTimer <= 0)
 		{
-			state = Menu;
+			state = MainMenu;
 			buttonBounceTimer = 20;
 		}
 
@@ -1011,7 +1011,7 @@ void update(uint32_t time) {
 	case GameOver:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
-			state = Menu;
+			state = MainMenu;
 			buttonBounceTimer = 20;
 		}
 		break;
