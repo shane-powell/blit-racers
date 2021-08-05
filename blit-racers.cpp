@@ -214,6 +214,8 @@ public:
 
 	uint8_t targetNode;
 
+	uint8_t carNumber = 0;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -225,7 +227,7 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position position, Rect spriteLocation, Size size, uint8_t targetNode, bool isPlayer = false)
+	Actor(Position position, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, bool isPlayer = false)
 	{
 		this->SetLocation(position);
 		this->spriteLocation = spriteLocation;
@@ -234,6 +236,7 @@ public:
 		this->targetNode = targetNode;
 		movement = Vec2(0, 1);
 		this->GenerateSpriteMap(180);
+		this->carNumber = carNumber;
 	}
 
 	void GenerateSpriteMap(float angle)
@@ -358,7 +361,7 @@ public:
 
 		uint8_t gridPosition = 0;
 		
-		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, true);
+		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, true);
 		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
 
@@ -366,7 +369,7 @@ public:
 		{
 			if(currentTrack->startLocations.size() >= gridPosition + 1)
 			{
-				cpuCars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0));
+				cpuCars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition));
 				gridPosition++;
 			}
 		}
@@ -596,6 +599,40 @@ std::string GetLapTimeString(uint32_t lapTime)
 	 return std::to_string(minutes) + ":" + secondString + ":" + millisecondString;
 }
 
+#define NUM_PALETTES 4
+
+Pen alternate_palettes[NUM_PALETTES][5] = {
+	
+	{
+		Pen(106, 190, 48),
+		Pen(153, 229, 80),
+		Pen(0, 0, 0),
+		Pen(255, 255, 255),
+		Pen(203, 219, 252)
+	},
+	{
+		Pen(12, 46, 171),
+		Pen(84, 116, 156),
+		Pen(0, 0, 0),
+		Pen(237, 237, 0),
+		Pen(128, 140, 84)
+	},
+	{
+		Pen(255, 0, 0),
+		Pen(148, 54, 61),
+		Pen(0, 0, 0),
+		Pen(242, 182, 61),
+		Pen(247, 206, 123)
+	},
+	{
+		Pen(0, 255, 0),
+		Pen(85, 53, 148),
+		Pen(0, 0, 0),
+		Pen(242, 61, 226),
+		Pen(247, 123, 236)
+	}
+};
+
 void DrawCar(Actor* car)
 {
 	auto sprite = car->degrees;
@@ -612,6 +649,10 @@ void DrawCar(Actor* car)
 		{
 			sprite += (spriteRotationalSegmentSize - remainder);
 		}
+	}
+
+	for (int x = 0; x < 5; x++) {
+		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
 	if (car->isPlayer)
