@@ -216,6 +216,8 @@ public:
 
 	uint8_t carNumber = 0;
 
+	uint8_t position = 0;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -325,6 +327,8 @@ public:
 
 	uint8_t aiCount = 3;
 
+	uint8_t place = 1;
+
 	Game()
 	{
 		// Load first track
@@ -379,6 +383,11 @@ public:
 	{
 		delete this->currentTrack;
 		delete this->PlayerCar;
+		
+		for (int i = 0; i < aiCount; ++i)
+		{
+			delete this->cpuCars[i];
+		}
 	}
 
 	/*Game(int8_t noPlayers)
@@ -753,8 +762,35 @@ void DrawGame()
 
 void DrawGameOver()
 {
+	std::string placeSuffix;
+
+	switch (game->PlayerCar->position)
+	{
+	case 1:
+		placeSuffix = "st";
+		break;
+	case 2:
+		placeSuffix = "nd";
+		break;
+	case 3:
+		placeSuffix = "rd";
+		break;
+	case 4:
+		placeSuffix = "th";
+		break;
+	}
+
 	screen.pen = Pen(255, 255, 255, 255);
-	screen.text("Someone won.", outline_font, Point(maxX / 2, maxY / 2), true, center_h);
+	screen.text("You came " + std::to_string(game->PlayerCar->position) + placeSuffix, outline_font, Point(maxX / 2, 10), true, center_h);
+
+	uint8_t lapHeight = 40;
+	uint8_t lapNumber = 1;
+	for (auto lap : game->PlayerCar->completedLapTimes)
+	{
+		screen.text("Lap " + std::to_string(lapNumber) + "   " + GetLapTimeString(lap), outline_font, Point(maxX / 2, lapHeight), true, center_h);
+		lapNumber++;
+		lapHeight += 20;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -942,8 +978,6 @@ void updateCar(Actor* car)
 		newVector.x = newVector.x * car->speedMultiplier;
 		newVector.y = newVector.y * car->speedMultiplier;
 
-		//car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack->objectsLayer.tiles, Collision);
-
 		if (car->currentTileData.obstruction)
 		{
 			auto collisionVector = Point(car->x, car->y) - car->currentTileData.collisionLocation;
@@ -971,6 +1005,8 @@ void updateCar(Actor* car)
 				if(car->completedLapTimes.size() >= game->currentTrack->laps)
 				{
 					car->moveEnabled = false;
+					car->position = game->place;
+					game->place++;
 					if (car->isPlayer)
 					{
 						buttonBounceTimer = 50;
@@ -995,19 +1031,6 @@ void update(uint32_t time) {
 	uint16_t changed = blit::buttons ^ lastButtons;
 	uint16_t pressed = changed & blit::buttons;
 	uint16_t released = changed & ~blit::buttons;
-
-
-	//auto down = calcAngleBetweenPoints(Point(0, 0), Point(0, 1));
-	//auto down2 = calcAngleBetweenPoints(Point(0, 0), Point(0, 2));
-	//auto right = calcAngleBetweenPoints(Point(0, 0), Point(1, 0));
-	//auto left = calcAngleBetweenPoints(Point(0, 0), Point(-1, 0));
-	//auto up = calcAngleBetweenPoints(Point(0, 0), Point(0, -1));
-
-	//auto downRight = calcAngleBetweenPoints(Point(0, 0), Point(1, 1));
-	//auto downRight2 = calcAngleBetweenPoints(Point(0, 0), Point(200, 200));
-	//auto downLeft = calcAngleBetweenPoints(Point(0, 0), Point(-1, 1));
-	//auto hmm = calcAngleBetweenPoints2(Point(123, 109), Point(405, 287));
-
 
 	if (buttonBounceTimer > 0)
 	{
