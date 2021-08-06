@@ -911,7 +911,7 @@ void updateCar(Actor* car)
 				}
 
 
-				if (car->speedMultiplier < 1)
+				if (car->speedMultiplier < 1.2 || (car->degrees >= targetAngle - 3 && car->degrees <= targetAngle + 3))
 				{
 					accelerate = true;
 				}
