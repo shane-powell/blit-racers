@@ -73,7 +73,7 @@ struct TileScanData
 	bool in_water = false;
 	float movement_modifier = 0;
 	float life_modifier = 0;
-	std::vector<Point> pointsChecked;
+	//std::vector<Point> pointsChecked;
 	//std::vector<uint8_t> idsFound;
 	std::map<uint8_t, TileData> tilesScanned;
 	Point collisionLocation;
@@ -471,7 +471,7 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 		for (auto x = 0; x < boundingBox.w; x++) {
 			auto pointToCheck = Point(boundingBox.x + x, boundingBox.y + y);
 
-			tileScanData.pointsChecked.emplace_back(pointToCheck);
+			//tileScanData.pointsChecked.emplace_back(pointToCheck);
 
 			const auto array_location = getTileFromPoint(pointToCheck,
 				tile_size,
@@ -738,11 +738,11 @@ void DrawGame()
 
 		//screen.text("tiles: " + ids, minimal_font, Point(0, 80));
 
-		for (auto pointChecked : game->PlayerCar->currentTileData.pointsChecked)
+		/*for (auto pointChecked : game->PlayerCar->currentTileData.pointsChecked)
 		{		
 			screen.pen = Pen(0, 255, 0, 50);
 			screen.pixel(worldToScreen(pointChecked, game->PlayerCar->camera));
-		}
+		}*/
 
 		screen.pen = Pen(255, 0, 0);
 
