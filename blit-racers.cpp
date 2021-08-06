@@ -117,8 +117,6 @@ public:
 	std::vector<Point> nodes;
 
 	uint8_t laps = 3;
-
-	Track() = default;
 	
 	Track(const uint8_t checkpointCount,
 		const uint8_t* mapTiles,
@@ -148,6 +146,7 @@ public:
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
 		objectsLayer = new TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
+		objectsLayer->empty_tile_id = 0;
 
 		auto checkpointLayerStart = map1 + ((tileMapHeight * tileMapWidth) * 2);
 		checkpointLayer = new TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
@@ -555,7 +554,7 @@ void update_camera(Actor* car) {
 //
 void init() {
 	set_screen_mode(ScreenMode::lores);
-
+	maxX = screen.bounds.w;
 	screen.sprites = Surface::load(car1);
 }
 
