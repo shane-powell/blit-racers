@@ -727,7 +727,7 @@ void DrawGame()
 		//screen.text(std::to_string(game->currentTrack->nodes[game->PlayerCar->targetNode].y), minimal_font, Point(0, 70));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
-		//screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
+		screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
 		screen.line(worldToScreen(Point(static_cast<int>(game->cpuCars[0]->x + game->cpuCars[0]->size.w /2), static_cast<int>(game->cpuCars[0]->y + game->cpuCars[0]->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[game->cpuCars[0]->targetNode], game->PlayerCar->camera));
 		std::string ids;
 
@@ -879,7 +879,22 @@ void updateCar(Actor* car)
 			{
 				auto currentTarget = game->currentTrack->nodes[car->targetNode];
 
-				float targetAngle = calcAngleBetweenPoints(Point(car->x + car->size.w / 2, car->y + car->size.h / 2), game->currentTrack->nodes[car->targetNode]);
+				auto carCenter = Point(car->x, car->y);
+
+
+				auto distance = carCenter - currentTarget;
+
+				if (distance.x < 0)
+				{
+					distance.x = distance.x * -1;
+				}
+
+				if (distance.y < 0)
+				{
+					distance.y = distance.y * -1;
+				}
+
+				float targetAngle = calcAngleBetweenPoints(carCenter, game->currentTrack->nodes[car->targetNode]);
 
 				////targetAngle = targetAngle * 180 / pi;
 				//targetAngle = targetAngle * -1;
@@ -909,13 +924,25 @@ void updateCar(Actor* car)
 					right = true;
 				}
 
+				auto angleAccuracy = 50;
 
-				if (car->speedMultiplier < 1.2 || (car->degrees >= targetAngle - 3 && car->degrees <= targetAngle + 3))
+				if (car->speedMultiplier < 1.4 || (car->degrees >= targetAngle - angleAccuracy && car->degrees <= targetAngle + angleAccuracy))
 				{
 					accelerate = true;
 				}
 
-				if (static_cast<int>(car->x) >= currentTarget.x - 20 && static_cast<int>(car->x) <= currentTarget.x + 20 && static_cast<int>(car->y) >= currentTarget.y - 20 && static_cast<int>(car->y) <= currentTarget.y + 20)
+				/*if (distance.x + distance.y < 20 && car->speedMultiplier >= 1)
+				{
+					accelerate = false;
+				}
+				else if(car->speedMultiplier < maxSpeed)
+				{
+					accelerate = true;
+				}*/
+
+				auto nodeAccuracy = 40;
+
+				if (static_cast<int>(car->x) >= currentTarget.x - nodeAccuracy && static_cast<int>(car->x) <= currentTarget.x + nodeAccuracy && static_cast<int>(car->y) >= currentTarget.y - nodeAccuracy && static_cast<int>(car->y) <= currentTarget.y + nodeAccuracy)
 				{
 					if (car->targetNode < game->currentTrack->nodes.size() - 1)
 					{
@@ -926,7 +953,6 @@ void updateCar(Actor* car)
 						car->targetNode = 0;
 					}
 				}
-				//game->currentTrack->checkpointLayer
 
 			}
 		}
