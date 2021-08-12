@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <utility>
+#include "animation-frame.hpp"
 using namespace blit;
 
 int32_t maxX = 160;
@@ -101,8 +102,9 @@ class Track
 {
 public:
 	uint8_t checkpointCount = 0;
-	const uint8_t * mapTiles{};
-	const uint8_t * mapSpiteSheet{};
+	const uint8_t* mapTiles{};
+	const uint8_t* mapSpiteSheet{};
+	Surface* carSpriteSheet{};
 	uint32_t tileMapHeight = NULL;
 	uint32_t tileMapWidth = NULL;
 	TileMap *world{};
@@ -130,6 +132,7 @@ public:
 		std::vector<Point> nodes,
 		uint8_t* image,
 		std::string title,
+		const uint8_t* carSpriteSheet,
 		uint8_t laps = 3) 
 	{
 		this->checkpointCount = checkpointCount;
@@ -142,6 +145,7 @@ public:
 		this->image = Surface::load(image);
 		this->title = std::move(title);
 		this->laps = laps;
+		this->carSpriteSheet = Surface::load(carSpriteSheet);
 		world = new TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
@@ -176,6 +180,10 @@ public:
 		delete image->data;
 		delete image->palette;
 		delete image;
+
+		delete carSpriteSheet->data;
+		delete carSpriteSheet->palette;
+		delete carSpriteSheet;
 	}
 };
 
@@ -301,10 +309,11 @@ enum TileScanType
 };
 
 GameState state = MainMenu;
-Surface* backGroundSurface;
-Surface* menu0ss;
-Surface* menu1ss;
-Surface* gameOver;
+//Surface* backGroundSurface;
+//Surface* menu0ss;
+//Surface* menu1ss;
+//Surface* gameOver;
+Surface* lightSprites = Surface::load(lights);
 
 const uint32_t tilemap_width = 128;
 
@@ -327,6 +336,10 @@ public:
 	uint8_t aiCount = 3;
 
 	uint8_t place = 1;
+
+	bool raceStarted = false;
+
+	std::vector<std::vector<AnimationFrame>> animations;
 
 	Game()
 	{
@@ -360,7 +373,7 @@ public:
 				Point(302, 536),
 				Point(257,501),
 				Point(262, 469)
-			}, const_cast<uint8_t*>(map1_preview), "Kitchen");
+			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1));
 
 		uint8_t gridPosition = 0;
 		
@@ -393,6 +406,64 @@ public:
 	{
 
 	}*/
+
+	void initRace() {
+		std::vector<AnimationFrame> startLightOneFrames;
+
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(0, 0), 100));
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(0, 0), 300, std::function([&]() {raceStarted = true; })));
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(0, 0), 100));
+
+		animations.emplace_back(startLightOneFrames);
+
+		std::vector<AnimationFrame> startLightTwoFrames;
+
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(24, 0), 200));
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(24, 0), 200));
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(24, 0), 100));
+
+		animations.emplace_back(startLightTwoFrames);
+
+		std::vector<AnimationFrame> startLightThreeFrames;
+
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(48, 0), 300));
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(48, 0), 100));
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(48, 0), 100));
+
+		animations.emplace_back(startLightThreeFrames);
+
+	}
+
+	void UpdateAnimations()
+	{
+		auto animation = animations.begin();
+
+		while (animation != animations.end()) {
+			if (animation->size() > 0)
+			{
+				if (animation->at(0).finished)
+				{
+					animation->erase(animation->begin());
+				}
+				else
+				{
+					animation->at(0).Animate();
+				}
+			}
+			else
+			{
+				animation = animations.erase(animation);
+
+				continue;
+			}
+			++animation;
+		}
+
+		if (animations.size() == 0)
+		{
+			//this->raceStarted = true;
+		}
+	}
 
 	void Update()
 	{
@@ -555,7 +626,6 @@ void update_camera(Actor* car) {
 void init() {
 	set_screen_mode(ScreenMode::lores);
 	maxX = screen.bounds.w;
-	screen.sprites = Surface::load(car1);
 }
 
 
@@ -575,8 +645,6 @@ void DrawLevelSelect()
 
 }
 
-
-
 void DrawWorld()
 {
 	game->currentTrack->world->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
@@ -587,6 +655,18 @@ void DrawWorld()
 		game->currentTrack->checkpointLayer->draw(&screen, Rect(0, 0, maxX, maxY), level_line_interrupt_callback);
 	}
 
+}
+
+void DrawAnimations()
+{
+	screen.sprites = lightSprites;
+	for (auto animation : game->animations)
+	{
+		if (animation.size() > 0)
+		{
+			screen.sprite(animation.at(0).spriteLocation, animation.at(0).drawLocation);
+		}
+	}
 }
 
 std::string GetLapTimeString(uint32_t lapTime)
@@ -643,6 +723,8 @@ Pen alternate_palettes[NUM_PALETTES][5] = {
 
 void DrawCar(Actor* car)
 {
+	screen.sprites = game->currentTrack->carSpriteSheet;
+
 	auto sprite = car->degrees;
 
 	float remainder = fmod(sprite, spriteRotationalSegmentSize);
@@ -686,6 +768,8 @@ void DrawGame()
 	}
 	
 	DrawCar(game->PlayerCar);
+
+	DrawAnimations();
 
 
 	const std::string curLapText = GetLapTimeString(game->PlayerCar->lapTime);
@@ -1085,7 +1169,7 @@ void update(uint32_t time) {
 	case LevelSelect:
 		if (buttons & Button::A && buttonBounceTimer <= 0)
 		{
-			screen.sprites = Surface::load(car1);
+			game->initRace();
 			state = Play;
 		}
 		break;
@@ -1102,12 +1186,17 @@ void update(uint32_t time) {
 			buttonBounceTimer = 20;
 		}
 
-		updateCar(game->PlayerCar);
-
-		for (auto cpuCar : game->cpuCars)
+		if (game->raceStarted)
 		{
-			updateCar(cpuCar);
+			updateCar(game->PlayerCar);
+
+			for (auto cpuCar : game->cpuCars)
+			{
+				updateCar(cpuCar);
+			}
 		}
+
+		game->UpdateAnimations();
 
 		update_camera(game->PlayerCar);
 		break;

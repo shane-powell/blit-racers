@@ -1,11 +1,12 @@
 Formatter: c_source
 Files:
-    C:\Users\kenja\Documents\GitHub\Microsoft\blit-racers\assets.hpp
-    C:\Users\kenja\Documents\GitHub\Microsoft\blit-racers\assets.cpp
+    assets.hpp
+    assets.cpp
 Assets:
     spritesheet: 549
     car1: 2453
+    lights: 652
     tile_sheet_1: 2530
     map1_preview: 737
-    map1: 49152
-Total size: 55421
+    map1: 98304
+Total size: 105225

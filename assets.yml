@@ -3,6 +3,8 @@ assets.cpp:
         name: spritesheet
     assets/car1.png:
         name: car1
+    assets/lights.png:
+        name: lights
     assets/tile-sheet1.png:
         name: tile_sheet_1
     assets/map1.png:

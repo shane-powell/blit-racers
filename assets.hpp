@@ -8,6 +8,9 @@ extern const uint32_t spritesheet_length;
 extern const uint8_t car1[];
 extern const uint32_t car1_length;
 
+extern const uint8_t lights[];
+extern const uint32_t lights_length;
+
 extern const uint8_t tile_sheet_1[];
 extern const uint32_t tile_sheet_1_length;
 
