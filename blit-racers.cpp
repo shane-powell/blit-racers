@@ -410,25 +410,27 @@ public:
 	void initRace() {
 		std::vector<AnimationFrame> startLightOneFrames;
 
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(0, 0), 100));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(0, 0), 300, std::function([&]() {raceStarted = true; })));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(0, 0), 100));
+		Point lightsStart = Point(maxX / 2 - 36, 0);
+
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), lightsStart, 100));
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), lightsStart, 300, std::function([&]() {raceStarted = true; })));
+		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), lightsStart, 100));
 
 		animations.emplace_back(startLightOneFrames);
 
 		std::vector<AnimationFrame> startLightTwoFrames;
 
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(24, 0), 100));
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
+		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 24, 0), 100));
 
 		animations.emplace_back(startLightTwoFrames);
 
 		std::vector<AnimationFrame> startLightThreeFrames;
 
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(48, 0), 300));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(48, 0), 100));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(48, 0), 100));
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 48, 0), 300));
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 48, 0), 100));
+		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 48, 0), 100));
 
 		animations.emplace_back(startLightThreeFrames);
 
@@ -631,8 +633,14 @@ void init() {
 
 void DrawMenu()
 {
-	screen.pen = Pen(255, 255, 255, 255);
-	screen.text("Press Button A to start.", outline_font, Point(maxX / 2,maxY / 2), true, center_h);
+screen.pen = Pen(255, 255, 255, 255);
+
+
+#ifdef DISPLAY_ST7789
+	screen.text("Press Button A\nto start.", minimal_font, Point(maxX / 2, maxY / 2), true, center_h);
+#else
+	screen.text("Press Button A to start.", outline_font, Point(maxX / 2, maxY / 2), true, center_h);
+#endif
 }
 
 void DrawLevelSelect()
@@ -777,28 +785,27 @@ void DrawGame()
 	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
 	backgroundSize.w = 45;
-	
-	screen.pen = Pen(0, 0, 0, 128);
-	screen.rectangle(Rect(Point(0,0), backgroundSize));
-
-	screen.pen = Pen(255, 0, 0);
-	screen.text(curLapText, minimal_font, Point(0, 0));
-	uint32_t lapNumber = 1;
-	
-	
-	for (auto completed_lap_time : game->PlayerCar->completedLapTimes)
-	{	
-		auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
-		backgroundSize = screen.measure_text(lapTimeString, minimal_font);
-		screen.pen = Pen(0, 0, 0, 128);
-		screen.rectangle(Rect(Point(0, lapNumber * 10), backgroundSize));
-		screen.pen = Pen(255, 0, 0);
-		screen.text( lapTimeString, minimal_font, Point(0, lapNumber * 10));
-		lapNumber ++;
-	}
 
 	if(debugMode)
 	{
+		screen.pen = Pen(0, 0, 0, 128);
+		screen.rectangle(Rect(Point(0, 0), backgroundSize));
+
+		screen.pen = Pen(255, 0, 0);
+		screen.text(curLapText, minimal_font, Point(0, 0));
+		uint32_t lapNumber = 1;
+
+		for (auto completed_lap_time : game->PlayerCar->completedLapTimes)
+		{
+			auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
+			backgroundSize = screen.measure_text(lapTimeString, minimal_font);
+			screen.pen = Pen(0, 0, 0, 128);
+			screen.rectangle(Rect(Point(0, lapNumber * 10), backgroundSize));
+			screen.pen = Pen(255, 0, 0);
+			screen.text(lapTimeString, minimal_font, Point(0, lapNumber * 10));
+			lapNumber++;
+		}
+
 		//screen.text("Vec X: " + std::to_string(game->PlayerCar->movement.x), minimal_font, Point(0, 0));
 		//screen.text("Vec Y: " + std::to_string(game->PlayerCar->movement.y), minimal_font, Point(0, 10));
 		//screen.text("V: " + std::to_string(PlayerCar->speedMultiplier), minimal_font, Point(0, 20));
