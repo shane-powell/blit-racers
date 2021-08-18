@@ -37,7 +37,10 @@ int32_t millisElapsed = 0;
 bool captureNodes = false;
 std::vector<Point> nodes;
 
-
+double CalculateDistance(blit::Point& pointA, blit::Point& pointB)
+{
+	return std::sqrt(pow((pointB.x - pointA.x), 2) + pow((pointB.y - pointA.y), 2));
+}
 
 float calcAngleBetweenPoints(Point a, Point b)
 {
@@ -118,6 +121,8 @@ public:
 	// todo split linked list for multiple paths
 	std::vector<Point> nodes;
 
+	std::vector<Point> checkPointLocations;
+
 	uint8_t laps = 3;
 	
 	Track(const uint8_t checkpointCount,
@@ -133,6 +138,7 @@ public:
 		uint8_t* image,
 		std::string title,
 		const uint8_t* carSpriteSheet,
+		std::vector<Point> checkPointLocations,
 		uint8_t laps = 3) 
 	{
 		this->checkpointCount = checkpointCount;
@@ -146,6 +152,7 @@ public:
 		this->title = std::move(title);
 		this->laps = laps;
 		this->carSpriteSheet = Surface::load(carSpriteSheet);
+		this->checkPointLocations = checkPointLocations;
 		world = new TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
@@ -225,6 +232,10 @@ public:
 
 	uint8_t position = 0;
 
+	bool sorted = false;
+
+	std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint;
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
@@ -236,9 +247,9 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position position, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, bool isPlayer = false)
+	Actor(Position gridPosition, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
 	{
-		this->SetLocation(position);
+		this->SetLocation(gridPosition);
 		this->spriteLocation = spriteLocation;
 		this->size = size;
 		this->isPlayer = isPlayer;
@@ -246,6 +257,7 @@ public:
 		movement = Vec2(0, 1);
 		this->GenerateSpriteMap(180);
 		this->carNumber = carNumber;
+		this->getNextTargetCheckpoint = getNextTargetCheckpoint;
 	}
 
 	void GenerateSpriteMap(float angle)
@@ -285,6 +297,97 @@ public:
 		this->y = gridPosition.location.y;
 		this->degrees = gridPosition.angle;
 	}
+
+	/*bool operator < (const Actor &other) {
+
+		this->sorted = true;
+
+		if (this->completedLapTimes.size() >= other.completedLapTimes.size())
+		{
+			return false;
+		} 
+
+		if (!this->currentCheckpoint >= other.currentCheckpoint)
+		{
+			return false;
+		}
+
+		if(CalculateDistance(this->getNextTargetCheckpoint(this->currentCheckpoint), Point(this->x,this->y)) > CalculateDistance(other.getNextTargetCheckpoint(other.currentCheckpoint), Point(other.x, other.y)))
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}*/
+
+	static bool SortByPosition (const Actor* carA, const Actor* carB) {
+
+		//std::cout << std::to_string(carA->carNumber) + " VS " + std::to_string(carB->carNumber) + "\n";
+
+		bool result = false;
+
+		if (carA->completedLapTimes.size() > carB->completedLapTimes.size())
+		{
+			result = true;
+			//std::cout << std::to_string(result) + "(lap count) \n";
+			return result;
+		}
+		
+		if (carA->completedLapTimes.size() == carB->completedLapTimes.size())
+		{
+			if (carA->currentCheckpoint > carB->currentCheckpoint)
+			{
+				result = true;
+				//std::cout << std::to_string(result) + "(CheckPoint) \n";
+				return result;
+			}
+
+			//if (carA->currentCheckpoint == carB->currentCheckpoint)
+			//{
+			//	auto distanceA = (int)CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), Point(carA->x, carA->y));
+
+			//	auto distanceB = (int)CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), Point(carB->x, carB->y));
+
+			//	if (distanceA < distanceB)
+			//	{
+			//		result = true;
+			//		//std::cout << std::to_string(result) + "(Distance) \n";
+			//		return result;
+			//	}
+			//	else if (distanceA == distanceB)
+			//	{
+			//		result = carA->carNumber < carB->carNumber;
+			//		//std::cout << std::to_string(result) + "(Tiebreaker) \n";
+			//		return result;
+			//	}
+			//}
+		}		
+
+		//std::cout << std::to_string(result) + "(Default) \n";
+		return result;
+		
+
+		/*if (!car1->completedLapTimes.size() >= car2->completedLapTimes.size())
+		{
+			return false;
+		}
+
+		if (!car1->currentCheckpoint >= car2->currentCheckpoint)
+		{
+			return false;
+		}
+
+		if (CalculateDistance(car1->getNextTargetCheckpoint(car1->currentCheckpoint), Point(car1->x, car1->y)) <= CalculateDistance(car2->getNextTargetCheckpoint(car2->currentCheckpoint), Point(car2->x, car2->y)))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}*/
+	}
 };
 
 enum PlayerState
@@ -309,10 +412,7 @@ enum TileScanType
 };
 
 GameState state = MainMenu;
-//Surface* backGroundSurface;
-//Surface* menu0ss;
-//Surface* menu1ss;
-//Surface* gameOver;
+
 Surface* lightSprites = Surface::load(lights);
 
 const uint32_t tilemap_width = 128;
@@ -329,7 +429,7 @@ public:
 
 	Track* currentTrack;
 
-	std::vector<Actor*> cpuCars;
+	std::vector<Actor*> cars;
 	
 	Actor* PlayerCar;
 
@@ -373,19 +473,44 @@ public:
 				Point(302, 536),
 				Point(257,501),
 				Point(262, 469)
-			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1));
+			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1), {
+				Point(280, 448),
+				Point(288, 304),
+				Point(504, 320),
+				Point(656, 280),
+				Point(288, 304),
+				Point(728, 424),
+				Point(672, 536),
+				Point(536, 536),
+				Point(368, 544)
+
+
+
+			});
 
 		uint8_t gridPosition = 0;
+
+		std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point
+			{
+				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
+				{
+					return this->currentTrack->checkPointLocations[currentCheckpoint];
+				}
+
+				return this->currentTrack->checkPointLocations[0];
+			});
 		
-		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, true);
+		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, getNextTargetCheckpoint, true);
 		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
+
+		cars.emplace_back(PlayerCar);
 
 		for (int i = 0; i < aiCount; ++i)
 		{
 			if(currentTrack->startLocations.size() >= gridPosition + 1)
 			{
-				cpuCars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition));
+				cars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, getNextTargetCheckpoint));
 				gridPosition++;
 			}
 		}
@@ -394,17 +519,27 @@ public:
 	~Game()
 	{
 		delete this->currentTrack;
-		delete this->PlayerCar;
+		//delete this->PlayerCar;
 		
-		for (int i = 0; i < aiCount; ++i)
+		for (int i = 0; i < cars.size(); ++i)
 		{
-			delete this->cpuCars[i];
+			delete this->cars[i];
 		}
 	}
 
 	/*Game(int8_t noPlayers)
 	{
 
+	}*/
+
+	/*Point getNextTargetCheckpoint(uint8_t currentCheckpoint)
+	{
+		if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
+		{
+			return this->currentTrack->checkPointLocations[currentCheckpoint];
+		}
+
+		return this->currentTrack->checkPointLocations[0];
 	}*/
 
 	void initRace() {
@@ -770,24 +905,27 @@ void DrawGame()
 
 	//screen.sprite(PlayerCar->spriteLocation, Point(PlayerCar->x, PlayerCar->y));
 
-	for (auto cpuCar : game->cpuCars)
+	for (auto car : game->cars)
 	{
-		DrawCar(cpuCar);
+		DrawCar(car);
 	}
 	
-	DrawCar(game->PlayerCar);
+	//DrawCar(game->PlayerCar);
 
 	DrawAnimations();
 
+	screen.text(std::to_string(game->PlayerCar->position), minimal_font, Point(0, 0));
 
-	const std::string curLapText = GetLapTimeString(game->PlayerCar->lapTime);
-
-	auto backgroundSize = screen.measure_text(curLapText, minimal_font);
-
-	backgroundSize.w = 45;
+	
 
 	if(debugMode)
 	{
+		const std::string curLapText = GetLapTimeString(game->PlayerCar->lapTime);
+
+		auto backgroundSize = screen.measure_text(curLapText, minimal_font);
+
+		backgroundSize.w = 45;
+
 		screen.pen = Pen(0, 0, 0, 128);
 		screen.rectangle(Rect(Point(0, 0), backgroundSize));
 
@@ -819,7 +957,7 @@ void DrawGame()
 		//screen.text(std::to_string(game->currentTrack->nodes[game->cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->cpuCars[0]->targetNode].y), minimal_font, Point(0, 70));
 		screen.text(std::to_string(debugAngle), minimal_font, Point(0, 90));
-		screen.line(worldToScreen(Point(static_cast<int>(game->cpuCars[0]->x + game->cpuCars[0]->size.w /2), static_cast<int>(game->cpuCars[0]->y + game->cpuCars[0]->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[game->cpuCars[0]->targetNode], game->PlayerCar->camera));
+		screen.line(worldToScreen(Point(static_cast<int>(game->cars[0]->x + game->cars[0]->size.w /2), static_cast<int>(game->cars[0]->y + game->cars[0]->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[game->cars[0]->targetNode], game->PlayerCar->camera));
 		std::string ids;
 
 		int i = 0;
@@ -973,17 +1111,7 @@ void updateCar(Actor* car)
 				auto carCenter = Point(car->x, car->y);
 
 
-				auto distance = carCenter - currentTarget;
-
-				if (distance.x < 0)
-				{
-					distance.x = distance.x * -1;
-				}
-
-				if (distance.y < 0)
-				{
-					distance.y = distance.y * -1;
-				}
+				CalculateDistance(carCenter, currentTarget);
 
 				float targetAngle = calcAngleBetweenPoints(carCenter, game->currentTrack->nodes[car->targetNode]);
 
@@ -1021,15 +1149,6 @@ void updateCar(Actor* car)
 				{
 					accelerate = true;
 				}
-
-				/*if (distance.x + distance.y < 20 && car->speedMultiplier >= 1)
-				{
-					accelerate = false;
-				}
-				else if(car->speedMultiplier < maxSpeed)
-				{
-					accelerate = true;
-				}*/
 
 				auto nodeAccuracy = 40;
 
@@ -1195,11 +1314,17 @@ void update(uint32_t time) {
 
 		if (game->raceStarted)
 		{
-			updateCar(game->PlayerCar);
+			//updateCar(game->PlayerCar);
 
-			for (auto cpuCar : game->cpuCars)
+			std::sort(game->cars.begin(), game->cars.end(), Actor::SortByPosition);
+
+			uint8_t position = 1;
+
+			for (auto car : game->cars)
 			{
-				updateCar(cpuCar);
+				car->position = position;
+				updateCar(car);
+				position++;
 			}
 		}
 
