@@ -1060,7 +1060,7 @@ void render(uint32_t time) {
 
 bool checkCarCollisions(Actor* car)
 {
-	auto collisionAdjustment = 0; //car->size.w / 4;
+	auto collisionAdjustment = car->size.w / 4;
 	auto collision = false;
 
 	for (auto car2 : game->cars)
