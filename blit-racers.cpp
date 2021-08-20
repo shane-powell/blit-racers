@@ -37,7 +37,7 @@ int32_t millisElapsed = 0;
 bool captureNodes = false;
 std::vector<Point> nodes;
 
-double CalculateDistance(blit::Point& pointA, blit::Point& pointB)
+double CalculateDistance(blit::Point& pointA, blit::Point pointB)
 {
 	return std::sqrt(pow((pointB.x - pointA.x), 2) + pow((pointB.y - pointA.y), 2));
 }
@@ -244,7 +244,7 @@ public:
 
 	bool sorted = false;
 
-	std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint;
+	std::function<Point&(uint8_t currentCheckpoint)> getNextTargetCheckpoint;
 
 	Actor() = default;
 
@@ -257,7 +257,7 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position gridPosition, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
+	Actor(Position gridPosition, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, std::function<Point&(uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
 	{
 		this->SetLocation(gridPosition);
 		this->spriteLocation = spriteLocation;
@@ -476,7 +476,7 @@ public:
 
 		uint8_t gridPosition = 0;
 
-		std::function<Point(uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point
+		std::function<Point&(uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point&
 			{
 				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
 				{
@@ -874,15 +874,15 @@ void DrawCar(Actor* car)
 		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
-	/*if (car->isPlayer)
+	if (car->isPlayer)
 	{
 		screen.sprite(car->sprites[sprite], Point(maxX / 2 - (car->size.w / 2), maxY / 2 - (car->size.h / 2)));
 	}
 	else
-	{*/
+	{
 		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
 		//screen.text(std::to_string(car->position), outline_font, worldToScreen(Point(car->x + car->size.w, car->y), game->PlayerCar->camera));
-	//}
+	}
 
 }
 
