@@ -6,7 +6,8 @@ Assets:
     spritesheet: 549
     car1: 2453
     lights: 652
+    title: 2969
     tile_sheet_1: 2530
     map1_preview: 737
     map1: 98304
-Total size: 105225
+Total size: 108194

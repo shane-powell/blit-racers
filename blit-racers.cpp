@@ -401,6 +401,9 @@ GameState state = MainMenu;
 
 Surface* lightSprites = Surface::load(lights);
 
+Surface* titleSprite = Surface::load(title);
+
+
 const uint32_t tilemap_width = 128;
 
 const uint32_t tilemap_height = 128;
@@ -754,12 +757,13 @@ void init() {
 void DrawMenu()
 {
 screen.pen = Pen(255, 255, 255, 255);
-
+screen.sprites = titleSprite;
+screen.sprite(Rect(0,0, 120 / 8, 120 / 8), Point(20, 0));
 
 #ifdef DISPLAY_ST7789
-	screen.text("Press Button A\nto start.", minimal_font, Point(maxX / 2, maxY / 2), true, center_h);
+	screen.text("Press Button A\nto start.", minimal_font, Point(maxX / 2, maxY - 10), true, center_h);
 #else
-	screen.text("Press Button A to start.", outline_font, Point(maxX / 2, maxY / 2), true, center_h);
+	screen.text("Press Button A to start.", outline_font, Point(maxX / 2, maxY - 10), true, center_h);
 #endif
 }
 
@@ -769,11 +773,11 @@ void DrawLevelSelect()
 	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
 	screen.sprites = game->currentTrack->image;
 
-#ifdef DISPLAY_ST7789
+//#ifdef DISPLAY_ST7789
 	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(20, maxY / 4));
-#else
-	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
-#endif
+//#else
+	//screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
+//#endif
 
 	screen.text(game->currentTrack->title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
 
