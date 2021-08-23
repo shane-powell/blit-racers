@@ -758,11 +758,13 @@ void DrawMenu()
 {
 screen.pen = Pen(255, 255, 255, 255);
 screen.sprites = titleSprite;
-screen.sprite(Rect(0,0, 120 / 8, 120 / 8), Point(20, 0));
+
 
 #ifdef DISPLAY_ST7789
-	screen.text("Press Button A\nto start.", minimal_font, Point(maxX / 2, maxY - 10), true, center_h);
+	screen.sprite(Rect(0, 0, 120 / 8, 120 / 8), Point(0, 0));
+	screen.text("Press Button A\nto start.", minimal_font, Point(maxX / 2, maxY - 20), true, center_h);
 #else
+	screen.sprite(Rect(0, 0, 120 / 8, 120 / 8), Point(20, 0));
 	screen.text("Press Button A to start.", outline_font, Point(maxX / 2, maxY - 10), true, center_h);
 #endif
 }

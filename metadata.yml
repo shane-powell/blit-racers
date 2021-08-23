@@ -2,7 +2,7 @@ title: Blit Racers!
 description: Micro machines style racer
 author: Shane Powell
 splash:
-  file: splash.png
+  file: assets/title.png
 icon:
   file: icon.png
 version: v0.7.7
