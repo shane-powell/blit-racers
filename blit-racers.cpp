@@ -729,12 +729,11 @@ static double MapRange(float range1Min, float range1Max, float range1Value, floa
 
 void update_camera(Actor* car) {
 
-	car->camera.x = car->x;
-	car->camera.y = car->y;
+	car->camera.x = car->x + (car->size.w / 2);
+	car->camera.y = car->y + (car->size.h / 2);
 
 	camera = Mat3::identity();
 	camera *= Mat3::translation(Vec2(car->x, car->y)); // offset to middle of world
-	//camera *= Mat3::translation(Vec2(PlayerCar->camera.x * 8.0f, PlayerCar->camera.y * 8.0f)); // offset to middle of world
 	camera *= Mat3::translation(Vec2(-maxX / 2, -maxY / 2)); // transform to centre of framebuffer
 }
 
@@ -769,7 +768,13 @@ void DrawLevelSelect()
 	screen.pen = Pen(255, 255, 255, 255);
 	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
 	screen.sprites = game->currentTrack->image;
+
+#ifdef DISPLAY_ST7789
+	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(20, maxY / 4));
+#else
 	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
+#endif
+
 	screen.text(game->currentTrack->title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
 
 }
@@ -874,15 +879,9 @@ void DrawCar(Actor* car)
 		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
-	if (car->isPlayer)
-	{
-		screen.sprite(car->sprites[sprite], Point(maxX / 2 - (car->size.w / 2), maxY / 2 - (car->size.h / 2)));
-	}
-	else
-	{
+
 		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
 		//screen.text(std::to_string(car->position), outline_font, worldToScreen(Point(car->x + car->size.w, car->y), game->PlayerCar->camera));
-	}
 
 }
 
@@ -1063,20 +1062,22 @@ bool checkCarCollisions(Actor* car)
 	auto collisionAdjustment = car->size.w / 4;
 	auto collision = false;
 
+	float newX = car->x + car->movement.x;
+	float newY = car->y + car->movement.y;
+
 	for (auto car2 : game->cars)
 	{
 		if (car2 != car)
 		{
-			if ((car2->x + collisionAdjustment <= car->x + (car->size.w - collisionAdjustment))
-				&& (car2->x + collisionAdjustment >= car->x + collisionAdjustment)
-				&& (car2->y + collisionAdjustment <= car->y + (car->size.h - collisionAdjustment))
-				&& (car2->y + collisionAdjustment >= car->y + collisionAdjustment))
+			if ((car2->x + collisionAdjustment <= newX + (car->size.w - collisionAdjustment))
+				&& (car2->x + collisionAdjustment >= newX + collisionAdjustment)
+				&& (car2->y + collisionAdjustment <= newY + (car->size.h - collisionAdjustment))
+				&& (car2->y + collisionAdjustment >= newY + collisionAdjustment))
 			{
-				auto collisionVector = Point(car->x, car->y) - Point(car2->x, car2->y);
-				car->x += collisionVector.x * 0.2;
-				car->y += collisionVector.y * 0.2;
+				auto collisionVector = Point(newX, newY) - Point(car2->x, car2->y);
+				car->x += (collisionVector.x * 0.2);
+				car->y += (collisionVector.y * 0.2);
 				collision = true;
-				//car->speedMultiplier = 0;
 			}
 		}
 	}
@@ -1089,7 +1090,8 @@ void ApplyCarMovement(float radian, Vec2 newVector, Actor* car)
 	car->movement.x = car->movement.x * friction;
 	car->movement.y = car->movement.y * friction;
 
-	//car->movement.rotate(radian);
+	//todo This needs to be removed at somepoint as I was accidently applying the rotation twice but removing makes ai worse.
+	car->movement.rotate(radian);
 			
 	car->movement.x += newVector.x;
 	car->movement.y += newVector.y;
