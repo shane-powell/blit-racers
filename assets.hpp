@@ -2,9 +2,6 @@
 #pragma once
 #include <cstdint>
 
-extern const uint8_t spritesheet[];
-extern const uint32_t spritesheet_length;
-
 extern const uint8_t car1[];
 extern const uint32_t car1_length;
 

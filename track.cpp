@@ -5,7 +5,7 @@ Track* LoadTrack(uint8_t trackId)
 	switch (trackId)
 	{
 	case 0:
-		return new Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
+		return new Track(8, const_cast<uint8_t*>(map1), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
 			{
 				Position(blit::Point(270,480),180),
 				Position(blit::Point(305,480),180),
@@ -47,7 +47,7 @@ Track* LoadTrack(uint8_t trackId)
 			},
 			blit::Size(24,24));
 	case 1:
-		return new Track(8, const_cast<uint8_t*>(map2), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
+		return new Track(8, const_cast<uint8_t*>(map2), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
 			{
 				Position(blit::Point(270,480),180),
 				Position(blit::Point(305,480),180),

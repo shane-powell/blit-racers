@@ -10,7 +10,6 @@ class Track
 public:
 	uint8_t checkpointCount = 0;
 	const uint8_t* mapTiles{};
-	const uint8_t* mapSpiteSheet{};
 	blit::Surface* carSpriteSheet{};
 	uint32_t tileMapHeight = NULL;
 	uint32_t tileMapWidth = NULL;
@@ -32,7 +31,6 @@ public:
 
 	Track(const uint8_t checkpointCount,
 		const uint8_t* mapTiles,
-		const uint8_t* mapSpiteSheet,
 		const uint32_t tileMapHeight,
 		const uint32_t tileMapWidth,
 		const uint8_t* worldLayerSheet,
@@ -49,7 +47,6 @@ public:
 	{
 		this->checkpointCount = checkpointCount;
 		this->mapTiles = mapTiles;
-		this->mapSpiteSheet = mapSpiteSheet;
 		this->tileMapHeight = tileMapHeight;
 		this->tileMapWidth = tileMapWidth;
 		this->startLocations = std::move(startLocations);
@@ -60,13 +57,13 @@ public:
 		this->carSpriteSheet = blit::Surface::load(carSpriteSheet);
 		this->checkPointLocations = checkPointLocations;
 		this->vehicleSize = vehicleSize;
-		world = new blit::TileMap(const_cast<uint8_t*>(map1), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
+		world = new blit::TileMap(const_cast<uint8_t*>(mapTiles), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
 
-		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
+		auto objectLayerStart = mapTiles + tileMapHeight * tileMapWidth;
 		objectsLayer = new blit::TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
 		objectsLayer->empty_tile_id = 0;
 
-		auto checkpointLayerStart = map1 + ((tileMapHeight * tileMapWidth) * 2);
+		auto checkpointLayerStart = mapTiles + ((tileMapHeight * tileMapWidth) * 2);
 		checkpointLayer = new blit::TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
 
 		world->sprites = blit::Surface::load(worldLayerSheet);
