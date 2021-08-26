@@ -5,9 +5,13 @@ Files:
 Assets:
     spritesheet: 549
     car1: 2453
+    boat1: 2125
     lights: 652
-    title: 2969
+    title: 2966
     tile_sheet_1: 2530
     map1_preview: 737
     map1: 98304
-Total size: 108194
+    tile_sheet_2: 2152
+    map2_preview: 2203
+    map2: 98304
+Total size: 212975
