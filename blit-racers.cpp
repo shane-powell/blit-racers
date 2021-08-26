@@ -99,33 +99,6 @@ public:
 	{
 		// Load first track
 		currentTrack = LoadTrack(this->currentTrackId);
-
-		uint8_t gridPosition = 0;
-
-		std::function<Point&(uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point&
-			{
-				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
-				{
-					return this->currentTrack->checkPointLocations[currentCheckpoint];
-				}
-
-				return this->currentTrack->checkPointLocations[0];
-			});
-		
-		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, getNextTargetCheckpoint, true);
-		gridPosition++;
-		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
-
-		cars.emplace_back(PlayerCar);
-
-		for (int i = 0; i < aiCount; ++i)
-		{
-			if(currentTrack->startLocations.size() >= gridPosition + 1)
-			{
-				cars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, 3, 3), Size(24, 24), 0, gridPosition, getNextTargetCheckpoint));
-				gridPosition++;
-			}
-		}
 	}
 
 	~Game()
@@ -155,6 +128,34 @@ public:
 	}*/
 
 	void initRace() {
+
+		uint8_t gridPosition = 0;
+
+		std::function<Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point&
+			{
+				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
+				{
+					return this->currentTrack->checkPointLocations[currentCheckpoint];
+				}
+
+				return this->currentTrack->checkPointLocations[0];
+			});
+
+		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, true);
+		gridPosition++;
+		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
+
+		cars.emplace_back(PlayerCar);
+
+		for (int i = 0; i < aiCount; ++i)
+		{
+			if (currentTrack->startLocations.size() >= gridPosition + 1)
+			{
+				cars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint));
+				gridPosition++;
+			}
+		}
+
 		std::vector<AnimationFrame> startLightOneFrames;
 
 		Point lightsStart = Point(maxX / 2 - 36, 0);
@@ -966,11 +967,12 @@ void update(uint32_t time) {
 			game->initRace();
 			state = Play;
 		}
-		else if (buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0 || joystick.x > 0)
+		else if ((buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0) || joystick.x > 0)
 		{
-			if (game->currentTrackId < TrackCount - 1)
+			buttonBounceTimer = 20;
+			if (game->currentTrackId > TrackCount - 1)
 			{
-				game->currentTrack++;
+				game->currentTrackId--;
 			}
 			else
 			{
@@ -979,17 +981,19 @@ void update(uint32_t time) {
 
 			game->currentTrack = LoadTrack(game->currentTrackId);
 		}
-		else if (buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0 || joystick.x < 0)
+		else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
 		{
-			if (game->currentTrackId > TrackCount - 1)
+			buttonBounceTimer = 20;
+			if (game->currentTrackId < TrackCount - 1)
 			{
-				game->currentTrack--;
+				game->currentTrackId++;
 			}
 			else
 			{
 				game->currentTrackId = 0;
 			}
 
+			delete game->currentTrack;
 			game->currentTrack = LoadTrack(game->currentTrackId);
 		}
 		break;

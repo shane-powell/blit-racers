@@ -44,7 +44,8 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(672, 536),
 				blit::Point(536, 536),
 				blit::Point(368, 544)
-			});
+			},
+			blit::Size(24,24));
 	case 1:
 		return new Track(8, const_cast<uint8_t*>(map2), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
 			{
@@ -75,7 +76,7 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(302, 536),
 				blit::Point(257,501),
 				blit::Point(262, 469)
-			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(boat1), {
+			}, const_cast<uint8_t*>(map2_preview), "Bath tub", const_cast<uint8_t*>(boat1), {
 				blit::Point(280, 448),
 				blit::Point(288, 304),
 				blit::Point(504, 320),
@@ -85,7 +86,7 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(672, 536),
 				blit::Point(536, 536),
 				blit::Point(368, 544)
-			});
+			}, blit::Size(16, 16));
 		break;
 	}
 

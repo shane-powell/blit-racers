@@ -4,7 +4,7 @@ Files:
     assets.cpp
 Assets:
     spritesheet: 549
-    car1: 2453
+    car1: 2448
     boat1: 2125
     lights: 652
     title: 2966
@@ -14,4 +14,4 @@ Assets:
     tile_sheet_2: 2152
     map2_preview: 2203
     map2: 98304
-Total size: 212975
+Total size: 212970

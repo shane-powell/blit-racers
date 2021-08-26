@@ -76,22 +76,22 @@ public:
 
 		for (int8_t i = 0; i < 24; i++)
 		{
-			sprites.emplace(angle, Rect(x, y, 3, 3));
+			sprites.emplace(angle, Rect(x, y, this->size.w / 8, this->size.h / 8));
 
-			if (x < 12)
+			if (x < this->size.w / 8 * 5)
 			{
-				x += 3;
+				x += this->size.w / 8;
 			}
 			else
 			{
 				x = 0;
-				y += 3;
+				y += this->size.h / 8;
 			}
 
 			if (angle == 360)
 			{
 				angle = 15;
-				sprites.emplace(0, Rect(x, y, 3, 3));
+				sprites.emplace(0, Rect(x, y, this->size.w / 8, this->size.h / 8));
 			}
 			else
 			{

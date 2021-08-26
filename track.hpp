@@ -19,6 +19,7 @@ public:
 	blit::TileMap* checkpointLayer{};
 	blit::Surface* image;
 	std::string title;
+	blit::Size vehicleSize;
 
 	std::vector<Position> startLocations;
 
@@ -43,6 +44,7 @@ public:
 		std::string title,
 		const uint8_t* carSpriteSheet,
 		std::vector<blit::Point> checkPointLocations,
+		blit::Size vehicleSize,
 		uint8_t laps = 3)
 	{
 		this->checkpointCount = checkpointCount;
@@ -57,6 +59,7 @@ public:
 		this->laps = laps;
 		this->carSpriteSheet = blit::Surface::load(carSpriteSheet);
 		this->checkPointLocations = checkPointLocations;
+		this->vehicleSize = vehicleSize;
 		world = new blit::TileMap(const_cast<uint8_t*>(map1), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
