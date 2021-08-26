@@ -9,7 +9,7 @@ endif()
 
 project (blit-racers)
 find_package (32BLIT CONFIG REQUIRED PATHS ../32blit-sdk)
-blit_executable (blit-racers blit-racers.cpp blit-racers.hpp animation-frame.cpp animation-frame.hpp)
+blit_executable (blit-racers blit-racers.cpp blit-racers.hpp animation-frame.cpp animation-frame.hpp track.hpp track.cpp position.hpp)
 blit_assets_yaml (blit-racers assets.yml)
 blit_metadata (blit-racers metadata.yml)
 

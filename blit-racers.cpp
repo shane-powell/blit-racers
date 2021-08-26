@@ -6,6 +6,8 @@
 #include <map>
 #include <utility>
 #include "animation-frame.hpp"
+#include "position.hpp"
+#include "track.hpp"
 using namespace blit;
 
 int32_t maxX = 160;
@@ -93,116 +95,11 @@ struct TileScanData
 	Point collisionLocation;
 };
 
-class Position
-{
-public:
-	Point location;
-	float angle;
-
-	Position(Point location, float angle)
-	{
-		this->location = location;
-		this->angle = angle;
-	}
-};
 
 //struct Node {
 //	Point data;
 //	struct Node* next;
 //};
-
-class Track
-{
-public:
-	uint8_t checkpointCount = 0;
-	const uint8_t* mapTiles{};
-	const uint8_t* mapSpiteSheet{};
-	Surface* carSpriteSheet{};
-	uint32_t tileMapHeight = NULL;
-	uint32_t tileMapWidth = NULL;
-	TileMap *world{};
-	TileMap *objectsLayer{};
-	TileMap *checkpointLayer{};
-	Surface *image;
-	std::string title;
-
-	std::vector<Position> startLocations;
-
-	// todo split linked list for multiple paths
-	std::vector<Point> nodes;
-
-	std::vector<Point> checkPointLocations;
-
-	uint8_t laps = 3;
-	
-	Track(const uint8_t checkpointCount,
-		const uint8_t* mapTiles,
-		const uint8_t* mapSpiteSheet,
-		const uint32_t tileMapHeight,
-		const uint32_t tileMapWidth,
-		const uint8_t* worldLayerSheet,
-		uint8_t* objectsLayerSheet,
-		uint8_t* checkpointLayerSheet,
-		std::vector<Position> startLocations,
-		std::vector<Point> nodes,
-		uint8_t* image,
-		std::string title,
-		const uint8_t* carSpriteSheet,
-		std::vector<Point> checkPointLocations,
-		uint8_t laps = 3) 
-	{
-		this->checkpointCount = checkpointCount;
-		this->mapTiles = mapTiles;
-		this->mapSpiteSheet = mapSpiteSheet;
-		this->tileMapHeight = tileMapHeight;
-		this->tileMapWidth = tileMapWidth;
-		this->startLocations = std::move(startLocations);
-		this->nodes = std::move(nodes);
-		this->image = Surface::load(image);
-		this->title = std::move(title);
-		this->laps = laps;
-		this->carSpriteSheet = Surface::load(carSpriteSheet);
-		this->checkPointLocations = checkPointLocations;
-		world = new TileMap(const_cast<uint8_t*>(map1), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
-
-		auto objectLayerStart = map1 + tileMapHeight * tileMapWidth;
-		objectsLayer = new TileMap(const_cast<uint8_t*>(objectLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
-		objectsLayer->empty_tile_id = 0;
-
-		auto checkpointLayerStart = map1 + ((tileMapHeight * tileMapWidth) * 2);
-		checkpointLayer = new TileMap(const_cast<uint8_t*>(checkpointLayerStart), nullptr, Size(tileMapWidth, tileMapHeight), nullptr);
-
-		world->sprites = Surface::load(worldLayerSheet);
-		objectsLayer->sprites = Surface::load(objectsLayerSheet);
-		checkpointLayer->sprites = Surface::load(checkpointLayerSheet);
-	}
-
-	~Track()
-	{
-		delete[] world->sprites->data;
-		delete[] world->sprites->palette;
-		delete world->sprites;
-		delete world;
-
-		delete[] objectsLayer->sprites->data;
-		delete[] objectsLayer->sprites->palette;
-		delete objectsLayer->sprites;
-		delete objectsLayer;
-
-		delete[] checkpointLayer->sprites->data;
-		delete[] checkpointLayer->sprites->palette;
-		delete checkpointLayer->sprites;
-		delete checkpointLayer;
-
-		delete image->data;
-		delete image->palette;
-		delete image;
-
-		delete carSpriteSheet->data;
-		delete carSpriteSheet->palette;
-		delete carSpriteSheet;
-	}
-};
 
 class Actor {
 public:
@@ -433,49 +330,7 @@ public:
 	Game()
 	{
 		// Load first track
-		currentTrack = new Track(8, const_cast<uint8_t*>(map1), const_cast<uint8_t*>(spritesheet), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
-			{
-				Position(Point(270,480),180),
-				Position(Point(305,480),180),
-				Position(Point(270,520),180),
-				Position(Point(310,520),180)
-			}
-		,
-			{
-				Point(270, 440),
-				Point(270, 412),
-				Point(270, 346),
-				Point(286, 297),
-				Point(331,288),
-				Point(405, 287),
-				Point(486, 305),
-				Point(555, 334),
-				Point(636, 300),
-				Point(699,283),
-				Point(726, 319),
-				Point(720, 394),
-				Point(728, 477),
-				Point(653,526),
-				Point(589, 550),
-				Point(498, 557),
-				Point(399, 548),
-				Point(302, 536),
-				Point(257,501),
-				Point(262, 469)
-			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1), {
-				Point(280, 448),
-				Point(288, 304),
-				Point(504, 320),
-				Point(656, 280),
-				Point(288, 304),
-				Point(728, 424),
-				Point(672, 536),
-				Point(536, 536),
-				Point(368, 544)
-
-
-
-			});
+		currentTrack = LoadTrack(0);
 
 		uint8_t gridPosition = 0;
 
@@ -775,11 +630,11 @@ void DrawLevelSelect()
 	screen.text("Select a track", outline_font, Point(maxX / 2, minY + 10), true, center_h);
 	screen.sprites = game->currentTrack->image;
 
-//#ifdef DISPLAY_ST7789
+#ifdef DISPLAY_ST7789
 	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(20, maxY / 4));
-//#else
-	//screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
-//#endif
+#else
+	screen.sprite(Rect(0, 0, 80 / 8, 60 / 8), Point(maxX / 4, maxY / 4));
+#endif
 
 	screen.text(game->currentTrack->title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
 
