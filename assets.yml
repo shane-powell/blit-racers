@@ -3,6 +3,8 @@ assets.cpp:
         name: spritesheet
     assets/car1.png:
         name: car1
+    assets/boat1.png:
+        name: boat1
     assets/lights.png:
         name: lights
     assets/title.png:
@@ -12,4 +14,10 @@ assets.cpp:
     assets/map1.png:
         name: map1_preview
     assets/maps/map1.tmx:
-        name: map1  
+        name: map1
+    assets/tile-sheet2.png:
+        name: tile_sheet_2
+    assets/map2.png:
+        name: map2_preview
+    assets/maps/map2.tmx:
+        name: map2
