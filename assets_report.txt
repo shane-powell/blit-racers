@@ -12,5 +12,5 @@ Assets:
     map1: 98304
     tile_sheet_2: 2152
     map2_preview: 2203
-    map2: 147456
-Total size: 261573
+    map2: 98304
+Total size: 212421
