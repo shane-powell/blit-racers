@@ -966,8 +966,8 @@ void update(uint32_t time) {
 		}
 		else if ((buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0) || joystick.x > 0)
 		{
-			buttonBounceTimer = 50;
-			if (game->currentTrackId > TrackCount - 1)
+			buttonBounceTimer = 20;
+			if (game->currentTrackId >= TrackCount - 1)
 			{
 				game->currentTrackId--;
 			}
@@ -976,11 +976,11 @@ void update(uint32_t time) {
 				game->currentTrackId = TrackCount - 1;
 			}
 
-			game->currentTrack = LoadTrack(game->currentTrackId);
+			ChangeCurrentTrack();
 		}
 		else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
 		{
-			buttonBounceTimer = 50;
+			buttonBounceTimer = 20;
 			if (game->currentTrackId < TrackCount - 1)
 			{
 				game->currentTrackId++;
@@ -990,8 +990,7 @@ void update(uint32_t time) {
 				game->currentTrackId = 0;
 			}
 
-			delete game->currentTrack;
-			game->currentTrack = LoadTrack(game->currentTrackId);
+			ChangeCurrentTrack();
 		}
 		break;
 	case Play:
@@ -1035,4 +1034,10 @@ void update(uint32_t time) {
 	}
 
 	lastButtons = blit::buttons;
+}
+
+void ChangeCurrentTrack()
+{
+	delete game->currentTrack;
+	game->currentTrack = LoadTrack(game->currentTrackId);
 }
