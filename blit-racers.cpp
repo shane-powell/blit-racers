@@ -699,10 +699,7 @@ bool checkCarCollisions(Actor* car)
 	{
 		if (car2 != car)
 		{
-			if ((car2->x + collisionAdjustment <= newX + (car->size.w - collisionAdjustment))
-				&& (car2->x + collisionAdjustment >= newX + collisionAdjustment)
-				&& (car2->y + collisionAdjustment <= newY + (car->size.h - collisionAdjustment))
-				&& (car2->y + collisionAdjustment >= newY + collisionAdjustment))
+			if (IsRectIntersecting(Rect(Point(car->x, car->y), car->size), Rect(Point(car2->x, car2->y), car2->size)))
 			{
 				auto collisionVector = Point(newX, newY) - Point(car2->x, car2->y);
 				car->x += (collisionVector.x * 0.2);
