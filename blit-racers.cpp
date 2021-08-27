@@ -969,7 +969,7 @@ void update(uint32_t time) {
 		}
 		else if ((buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0) || joystick.x > 0)
 		{
-			buttonBounceTimer = 20;
+			buttonBounceTimer = 50;
 			if (game->currentTrackId > TrackCount - 1)
 			{
 				game->currentTrackId--;
@@ -983,7 +983,7 @@ void update(uint32_t time) {
 		}
 		else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
 		{
-			buttonBounceTimer = 20;
+			buttonBounceTimer = 50;
 			if (game->currentTrackId < TrackCount - 1)
 			{
 				game->currentTrackId++;
