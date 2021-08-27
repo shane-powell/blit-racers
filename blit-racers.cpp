@@ -973,7 +973,7 @@ void update(uint32_t time) {
 			}
 			else
 			{
-				game->currentTrackId = 0;
+				game->currentTrackId = TrackCount - 1;
 			}
 
 			game->currentTrack = LoadTrack(game->currentTrackId);
