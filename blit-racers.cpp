@@ -9,6 +9,7 @@
 #include "position.hpp"
 #include "track.hpp"
 #include "actor.hpp"
+#include "game.hpp"
 using namespace blit;
 
 int32_t maxX = 160;
@@ -72,162 +73,7 @@ const uint32_t tilemap_width = 128;
 
 const uint32_t tilemap_height = 128;
 
-class Game
-{
-public:
 
-	int8_t aiOffset = 0;
-
-	int8_t vibrationTimer = 0;
-
-	uint8_t currentTrackId = 0;
-	Track* currentTrack;
-
-	std::vector<Actor*> cars;
-	
-	Actor* PlayerCar;
-
-	uint8_t aiCount = 3;
-
-	uint8_t place = 1;
-
-	bool raceStarted = false;
-
-	std::vector<std::vector<AnimationFrame>> animations;
-
-	Game()
-	{
-		// Load first track
-		currentTrack = LoadTrack(this->currentTrackId);
-	}
-
-	~Game()
-	{
-		delete this->currentTrack;
-		//delete this->PlayerCar;
-		
-		for (int i = 0; i < cars.size(); ++i)
-		{
-			delete this->cars[i];
-		}
-	}
-
-	/*Game(int8_t noPlayers)
-	{
-
-	}*/
-
-	/*Point getNextTargetCheckpoint(uint8_t currentCheckpoint)
-	{
-		if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
-		{
-			return this->currentTrack->checkPointLocations[currentCheckpoint];
-		}
-
-		return this->currentTrack->checkPointLocations[0];
-	}*/
-
-	void initRace() {
-
-		uint8_t gridPosition = 0;
-
-		std::function<Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point&
-			{
-				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
-				{
-					return this->currentTrack->checkPointLocations[currentCheckpoint];
-				}
-
-				return this->currentTrack->checkPointLocations[0];
-			});
-
-		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, true);
-		gridPosition++;
-		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
-
-		cars.emplace_back(PlayerCar);
-
-		for (int i = 0; i < aiCount; ++i)
-		{
-			if (currentTrack->startLocations.size() >= gridPosition + 1)
-			{
-				cars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint));
-				gridPosition++;
-			}
-		}
-
-		std::vector<AnimationFrame> startLightOneFrames;
-
-		Point lightsStart = Point(maxX / 2 - 36, 0);
-
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), lightsStart, 100));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), lightsStart, 300, std::function([&]() {raceStarted = true; })));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), lightsStart, 100));
-
-		animations.emplace_back(startLightOneFrames);
-
-		std::vector<AnimationFrame> startLightTwoFrames;
-
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 24, 0), 100));
-
-		animations.emplace_back(startLightTwoFrames);
-
-		std::vector<AnimationFrame> startLightThreeFrames;
-
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 48, 0), 300));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 48, 0), 100));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 48, 0), 100));
-
-		animations.emplace_back(startLightThreeFrames);
-
-	}
-
-	void UpdateAnimations()
-	{
-		auto animation = animations.begin();
-
-		while (animation != animations.end()) {
-			if (animation->size() > 0)
-			{
-				if (animation->at(0).finished)
-				{
-					animation->erase(animation->begin());
-				}
-				else
-				{
-					animation->at(0).Animate();
-				}
-			}
-			else
-			{
-				animation = animations.erase(animation);
-
-				continue;
-			}
-			++animation;
-		}
-
-		if (animations.size() == 0)
-		{
-			//this->raceStarted = true;
-		}
-	}
-
-	void Update()
-	{
-		if (vibrationTimer > 0)
-		{
-			blit::vibration = 1;
-			vibrationTimer--;
-		}
-		else
-		{
-			blit::vibration = 0;
-		}
-	}
-};
 
 uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
 	uint16_t horizontal_location = (point.x / tile_size) - 1;
@@ -582,7 +428,7 @@ void DrawGame()
 
 			}
 
-			screen.pen = Pen(0, 255, 0, 50);
+			screen.pen = blit::Pen(0, 255, 0, 50);
 
 			screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), car->size));
 		}
@@ -699,9 +545,9 @@ bool checkCarCollisions(Actor* car)
 	{
 		if (car2 != car)
 		{
-			if (IsRectIntersecting(Rect(Point(car->x, car->y), car->size), Rect(Point(car2->x, car2->y), car2->size)))
+			if (IsRectIntersecting(blit::Rect(blit::Point(car->x, car->y), car->size), blit::Rect(blit::Point(car2->x, car2->y), car2->size)))
 			{
-				auto collisionVector = Point(newX, newY) - Point(car2->x, car2->y);
+				auto collisionVector = blit::Point(newX, newY) - blit::Point(car2->x, car2->y);
 				car->x += (collisionVector.x * 0.2);
 				car->y += (collisionVector.y * 0.2);
 				collision = true;
@@ -712,7 +558,7 @@ bool checkCarCollisions(Actor* car)
 	return collision;
 }
 
-void ApplyCarMovement(float radian, Vec2 newVector, Actor* car)
+void ApplyCarMovement(float radian, blit::Vec2 newVector, Actor* car)
 {
 	car->movement.x = car->movement.x * friction;
 	car->movement.y = car->movement.y * friction;
@@ -949,7 +795,7 @@ void update(uint32_t time) {
 		{
 			delete game;
 
-			game = new Game();
+			game = new Game(maxX);
 			state = LevelSelect;
 			buttonBounceTimer = 20;
 		}
