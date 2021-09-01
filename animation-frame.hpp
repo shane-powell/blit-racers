@@ -25,20 +25,5 @@ public:
         this->callback = callback;
     }
 
-    void Animate()
-    {
-        if (frameCount >= frameLength)
-        {
-            if (callback != NULL)
-            {
-                callback();
-            }
-
-            finished = true;
-        }
-        else
-        {
-            frameCount++;
-        }
-    }
+    void Animate();
 };
