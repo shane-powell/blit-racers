@@ -16,7 +16,11 @@ struct TileData
 
 struct TileScanData
 {
+	uint16_t areaSize = 0;
 	bool obstruction = false;
 	std::map<uint8_t, TileData> tilesScanned;
 	blit::Point collisionLocation;
+
+	TileScanData() = default;
+	//constexpr TileScanData(uint16_t areaSize) : areaSize(areaSize) {};
 };

@@ -297,6 +297,8 @@ void ProcessCollisionScan(TileScanData& tileScanData, Point pointToCheck, const 
 // todo replace point and sprite width/height with rect
 TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer, TileScanType scanType) {
 	TileScanData tileScanData;
+	//TileScanData tileScanData(boundingBox.w * boundingBox.h);
+	tileScanData.areaSize = boundingBox.w * boundingBox.h;
 
 	for (auto y = 0; y < boundingBox.h; y++) {
 		for (auto x = 0; x < boundingBox.w; x++) {
@@ -331,20 +333,6 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 				break;
 			}
 			
-		}
-	}
-
-	for (auto tileType : tileScanData.tilesScanned) {
-		for (auto trackTile : game->currentTrack->activeTiles)
-		{
-			if (tileType.first == trackTile.id)
-			{
-				if (trackTile.obstruction)
-				{
-					tileScanData.obstruction = true;
-					tileScanData.collisionLocation = tileType.second.detectionLocation;
-				}
-			}
 		}
 	}
 
@@ -758,7 +746,7 @@ void updateCar(Actor* car)
 
 	// Get scan data up front so AI can decide what to do
 	car->currentTileData = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack->objectsLayer->tiles, Collision);
-
+	car->ProcessTileData(game->currentTrack);
 	
 		bool accelerate = false;
 		bool left = false;

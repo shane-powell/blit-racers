@@ -2,17 +2,18 @@
 #include <32blit.hpp>
 #include "tiledata.hpp"
 #include "calculations.hpp"
+#include "track.hpp"
 
 class Actor {
 public:
 	virtual ~Actor() = default;
 	blit::Size size;
-	Rect spriteLocation;
+	blit::Rect spriteLocation;
 	float x = 0.0f;
 	float y = 0.0f;
 	blit::Vec2 camera;
 	float degrees = 270.0f;
-	std::map<float, Rect> sprites;
+	std::map<float, blit::Rect> sprites;
 	uint8_t inputDelay = 0;
 	bool moveEnabled = true;
 	const uint8_t STEERINGDELAYMIN = 3;
@@ -43,7 +44,7 @@ public:
 
 	bool sorted = false;
 
-	std::function<Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
+	std::function<blit::Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
 
 	Actor() = default;
 
@@ -52,18 +53,18 @@ public:
 		this->x = xIn;
 		this->y = yIn;
 
-		movement = Vec2(0, 1);
+		movement = blit::Vec2(0, 1);
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position gridPosition, Rect spriteLocation, Size size, uint8_t targetNode, uint8_t carNumber, std::function<Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
+	Actor(Position gridPosition, blit::Rect spriteLocation, blit::Size size, uint8_t targetNode, uint8_t carNumber, std::function<blit::Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
 	{
 		this->SetLocation(gridPosition);
 		this->spriteLocation = spriteLocation;
 		this->size = size;
 		this->isPlayer = isPlayer;
 		this->targetNode = targetNode;
-		movement = Vec2(0, 1);
+		movement = blit::Vec2(0, 1);
 		this->GenerateSpriteMap(180);
 		this->carNumber = carNumber;
 		this->getNextTargetCheckpoint = getNextTargetCheckpoint;
@@ -76,7 +77,7 @@ public:
 
 		for (int8_t i = 0; i < 24; i++)
 		{
-			sprites.emplace(angle, Rect(x, y, this->size.w / 8, this->size.h / 8));
+			sprites.emplace(angle, blit::Rect(x, y, this->size.w / 8, this->size.h / 8));
 
 			if (x < this->size.w / 8 * 5)
 			{
@@ -91,7 +92,7 @@ public:
 			if (angle == 360)
 			{
 				angle = 15;
-				sprites.emplace(0, Rect(x, y, this->size.w / 8, this->size.h / 8));
+				sprites.emplace(0, blit::Rect(x, y, this->size.w / 8, this->size.h / 8));
 			}
 			else
 			{
@@ -99,6 +100,8 @@ public:
 			}
 		}
 	}
+
+	void ProcessTileData(Track* currentTrack);
 
 	void SetLocation(Position gridPosition)
 	{
@@ -131,9 +134,9 @@ public:
 
 			if (carA->currentCheckpoint == carB->currentCheckpoint)
 			{
-				auto distanceA = (int)CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), Point(carA->x, carA->y));
+				auto distanceA = (int)CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), blit::Point(carA->x, carA->y));
 
-				auto distanceB = (int)CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), Point(carB->x, carB->y));
+				auto distanceB = (int)CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), blit::Point(carB->x, carB->y));
 
 				if (distanceA < distanceB)
 				{
