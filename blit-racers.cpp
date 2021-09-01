@@ -102,44 +102,6 @@ Point worldToScreen(Point point, Vec2 camera)
 		point.y - camera.y + screen.bounds.h / 2);
 }
 
-void ProcessCollisionScan(TileScanData& tileScanData, Point pointToCheck, const uint8_t tileScanned)
-{
-	
-
-	switch (tileScanned) {
-		//case 10:
-		//case 11:
-		//case 12:
-		//case 13:
-		//case 26:
-		//case 27:
-		//case 28:
-		//case 29:
-
-	case 36:
-	case 37:
-	case 38:
-	case 39:
-	case 52:
-	case 53:
-	case 54:
-	case 55:
-	case 68:
-	case 69:
-	case 70:
-	case 71:
-	case 84:
-	case 85:
-	case 86:
-	case 87:
-		tileScanData.obstruction = true;
-		tileScanData.collisionLocation = pointToCheck;
-		break;
-	default:
-		break;
-	}
-}
-
 // todo replace point and sprite width/height with rect
 TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer, TileScanType scanType) {
 	TileScanData tileScanData;
@@ -168,17 +130,6 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 				
 				tileScanData.tilesScanned.emplace(tileData.id, tileData);
 			}
-
-			switch (scanType)
-			{
-			case Collision:
-				//ProcessCollisionScan(tileScanData, pointToCheck, tileScanned);
-				break;
-			case Checkpoint:
-				//ProcessCheckpointScan(tileScanData, pointToCheck, tileScanned);
-				break;
-			}
-			
 		}
 	}
 
@@ -818,7 +769,7 @@ void update(uint32_t time) {
 				game->currentTrackId = TrackCount - 1;
 			}
 
-			ChangeCurrentTrack();
+			game->ChangeCurrentTrack();
 		}
 		else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
 		{
@@ -832,7 +783,7 @@ void update(uint32_t time) {
 				game->currentTrackId = 0;
 			}
 
-			ChangeCurrentTrack();
+			game->ChangeCurrentTrack();
 		}
 		break;
 	case Play:
@@ -876,10 +827,4 @@ void update(uint32_t time) {
 	}
 
 	lastButtons = blit::buttons;
-}
-
-void ChangeCurrentTrack()
-{
-	delete game->currentTrack;
-	game->currentTrack = LoadTrack(game->currentTrackId);
 }

@@ -163,4 +163,6 @@ public:
 			blit::vibration = 0;
 		}
 	}
+
+	void ChangeCurrentTrack();
 };
