@@ -248,7 +248,7 @@ void DrawGame()
 
 	if(debugMode)
 	{
-		const std::string curLapText = GetLapTimeString(game->PlayerCar->lapTime);
+		const std::string curLapText = util::GetLapTimeString(game->PlayerCar->lapTime);
 
 		auto backgroundSize = screen.measure_text(curLapText, minimal_font);
 
@@ -263,7 +263,7 @@ void DrawGame()
 
 		for (auto completed_lap_time : game->PlayerCar->completedLapTimes)
 		{
-			auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + GetLapTimeString(completed_lap_time);
+			auto lapTimeString = "Lap:" + std::to_string(lapNumber) + " " + util::GetLapTimeString(completed_lap_time);
 			backgroundSize = screen.measure_text(lapTimeString, minimal_font);
 			screen.pen = Pen(0, 0, 0, 128);
 			screen.rectangle(Rect(Point(0, lapNumber * 10), backgroundSize));
@@ -363,7 +363,7 @@ void DrawGameOver()
 	uint8_t lapNumber = 1;
 	for (auto lap : game->PlayerCar->completedLapTimes)
 	{
-		screen.text("Lap " + std::to_string(lapNumber) + "   " + GetLapTimeString(lap), outline_font, Point(maxX / 2, lapHeight), true, center_h);
+		screen.text("Lap " + std::to_string(lapNumber) + "   " + util::GetLapTimeString(lap), outline_font, Point(maxX / 2, lapHeight), true, center_h);
 		lapNumber++;
 		lapHeight += 20;
 	}
@@ -413,7 +413,7 @@ bool checkCarCollisions(Actor* car)
 	{
 		if (car2 != car)
 		{
-			if (IsRectIntersecting(blit::Rect(blit::Point(car->x, car->y), car->size), blit::Rect(blit::Point(car2->x, car2->y), car2->size)))
+			if (util::IsRectIntersecting(blit::Rect(blit::Point(car->x, car->y), car->size), blit::Rect(blit::Point(car2->x, car2->y), car2->size)))
 			{
 				auto collisionVector = blit::Point(newX, newY) - blit::Point(car2->x, car2->y);
 				car->x += (collisionVector.x * 0.2);
@@ -491,9 +491,9 @@ void updateCar(Actor* car)
 				auto carCenter = Point(car->x, car->y);
 
 
-				CalculateDistance(carCenter, currentTarget);
+				util::CalculateDistance(carCenter, currentTarget);
 
-				float targetAngle = calcAngleBetweenPoints(carCenter, game->currentTrack->nodes[car->targetNode]);
+				float targetAngle = util::calcAngleBetweenPoints(carCenter, game->currentTrack->nodes[car->targetNode]);
 
 				debugAngle = targetAngle;
 
@@ -550,7 +550,7 @@ void updateCar(Actor* car)
 		if (car->inputDelay == 0)
 		{
 			if (right) {
-				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
 				if (car->degrees == 360.0f)
 				{
@@ -562,7 +562,7 @@ void updateCar(Actor* car)
 				}
 			}
 			else if (left) {
-				car->inputDelay = round(MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
 				if (car->degrees == 0.0f)
 				{
@@ -577,7 +577,7 @@ void updateCar(Actor* car)
 
 		float radian = (pi * car->degrees) / 180.00f;
 
-		Vec2 newVector = DegreesToVector(car->degrees);
+		Vec2 newVector = util::DegreesToVector(car->degrees);
 			Vec2(0, 1);
 		
 			newVector.x = newVector.x * car->speedMultiplier;

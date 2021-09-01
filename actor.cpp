@@ -92,9 +92,9 @@ bool Actor::SortByPosition(const Actor* carA, const Actor* carB) {
 
 		if (carA->currentCheckpoint == carB->currentCheckpoint)
 		{
-			auto distanceA = (int)CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), blit::Point(carA->x, carA->y));
+			auto distanceA = (int)util::CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), blit::Point(carA->x, carA->y));
 
-			auto distanceB = (int)CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), blit::Point(carB->x, carB->y));
+			auto distanceB = (int)util::CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), blit::Point(carB->x, carB->y));
 
 			if (distanceA < distanceB)
 			{
