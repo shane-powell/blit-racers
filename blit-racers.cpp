@@ -258,6 +258,8 @@ Point worldToScreen(Point point, Vec2 camera)
 
 void ProcessCollisionScan(TileScanData& tileScanData, Point pointToCheck, const uint8_t tileScanned)
 {
+	
+
 	switch (tileScanned) {
 		//case 10:
 		//case 11:
@@ -307,14 +309,9 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 				tileMapWidth);
 			const uint8_t tileScanned = *(mapLayer + array_location); //map1[array_location + tilemap_height * tilemap_width]; //map1[array_location];  //*(mapLayer + array_location); //mapLayer[array_location];
 
-			TileData tileData;
-			tileData.id = tileScanned;
-			tileData.index = array_location;
-			
-			tileScanData.id = tileScanned;
-			tileScanData.index = array_location;
+			TileData tileData = TileData(tileScanned, array_location, pointToCheck);
 
-			if (auto it{ tileScanData.tilesScanned.find(tileScanData.id) }; it != std::end(tileScanData.tilesScanned))
+			if (auto it{ tileScanData.tilesScanned.find(tileData.id) }; it != std::end(tileScanData.tilesScanned))
 			{
 				it->second.detectionCount += 1;
 			}
@@ -327,7 +324,7 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 			switch (scanType)
 			{
 			case Collision:
-				ProcessCollisionScan(tileScanData, pointToCheck, tileScanned);
+				//ProcessCollisionScan(tileScanData, pointToCheck, tileScanned);
 				break;
 			case Checkpoint:
 				//ProcessCheckpointScan(tileScanData, pointToCheck, tileScanned);
@@ -336,6 +333,21 @@ TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_
 			
 		}
 	}
+
+	for (auto tileType : tileScanData.tilesScanned) {
+		for (auto trackTile : game->currentTrack->activeTiles)
+		{
+			if (tileType.first == trackTile.id)
+			{
+				if (trackTile.obstruction)
+				{
+					tileScanData.obstruction = true;
+					tileScanData.collisionLocation = tileType.second.detectionLocation;
+				}
+			}
+		}
+	}
+
 	return tileScanData;
 }
 
@@ -781,16 +793,6 @@ void updateCar(Actor* car)
 
 				float targetAngle = calcAngleBetweenPoints(carCenter, game->currentTrack->nodes[car->targetNode]);
 
-				////targetAngle = targetAngle * 180 / pi;
-				//targetAngle = targetAngle * -1;
-
-				//
-				//if(targetAngle < 0)
-				//{
-				//	targetAngle = targetAngle * -1 * 2;
-				//}
-
-
 				debugAngle = targetAngle;
 
 				Vec2 oldVector = Vec2(0, 1);
@@ -876,15 +878,21 @@ void updateCar(Actor* car)
 		Vec2 newVector = DegreesToVector(car->degrees);
 			Vec2(0, 1);
 		
-		newVector.x = newVector.x * car->speedMultiplier;
-		newVector.y = newVector.y * car->speedMultiplier;
+			newVector.x = newVector.x * car->speedMultiplier;
+			newVector.y = newVector.y * car->speedMultiplier;
+		
 
 		if (car->currentTileData.obstruction)
 		{
+			car->speedMultiplier = car->speedMultiplier / 2;
 			auto collisionVector = Point(car->x, car->y) - car->currentTileData.collisionLocation;
-			car->x += collisionVector.x;
-			car->y += collisionVector.y;
+			//collisionVector *= car->speedMultiplier;
+			//car->x += collisionVector.x;
+			//car->y += collisionVector.y;
+			newVector.x += collisionVector.x * car->speedMultiplier;
+			newVector.y += collisionVector.y * car->speedMultiplier;
 		}
+
 
 		ApplyCarMovement(radian, newVector, car);
 

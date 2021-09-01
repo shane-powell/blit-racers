@@ -2,6 +2,7 @@
 #include <32blit.hpp>
 #include "position.hpp"
 #include "assets.hpp"
+#include "tiledata.hpp"
 
 const uint8_t TrackCount = 2;
 
@@ -27,6 +28,8 @@ public:
 
 	std::vector<blit::Point> checkPointLocations;
 
+	std::vector<TileData> activeTiles;
+
 	uint8_t laps = 3;
 
 	Track(const uint8_t checkpointCount,
@@ -43,6 +46,7 @@ public:
 		const uint8_t* carSpriteSheet,
 		std::vector<blit::Point> checkPointLocations,
 		blit::Size vehicleSize,
+		std::vector<TileData> activeTiles,
 		uint8_t laps = 3)
 	{
 		this->checkpointCount = checkpointCount;
@@ -57,6 +61,8 @@ public:
 		this->carSpriteSheet = blit::Surface::load(carSpriteSheet);
 		this->checkPointLocations = checkPointLocations;
 		this->vehicleSize = vehicleSize;
+		this->activeTiles = activeTiles;
+
 		world = new blit::TileMap(const_cast<uint8_t*>(mapTiles), nullptr, blit::Size(tileMapWidth, tileMapHeight), nullptr);
 
 		auto objectLayerStart = mapTiles + tileMapHeight * tileMapWidth;

@@ -1,4 +1,5 @@
 #include "track.hpp"
+#include "tiledata.hpp"
 
 Track* LoadTrack(uint8_t trackId)
 {
@@ -45,7 +46,25 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(536, 536),
 				blit::Point(368, 544)
 			},
-			blit::Size(24,24));
+			blit::Size(24, 24), 
+			{
+				TileData(36,  false, true, false),
+	TileData(37,  false, true, false),
+	TileData(38,  false, true, false),
+	TileData(39,  false, true, false),
+	TileData(52,  false, true, false),
+	TileData(53,  false, true, false),
+	TileData(54,  false, true, false),
+	TileData(55,  false, true, false),
+	TileData(68,  false, true, false),
+	TileData(69,  false, true, false),
+	TileData(70,  false, true, false),
+	TileData(71,  false, true, false),
+	TileData(84,  false, true, false),
+	TileData(85,  false, true, false),
+	TileData(86,  false, true, false),
+	TileData(87,  false, true, false)
+			});
 	case 1:
 		return new Track(8, const_cast<uint8_t*>(map2), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
 			{
@@ -86,7 +105,53 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(672, 536),
 				blit::Point(536, 536),
 				blit::Point(368, 544)
-			}, blit::Size(16, 16));
+			}, blit::Size(16, 16), 
+			{
+				//Bubbles
+				TileData(10,  false, true, false),
+				TileData(11,  false, true, false),
+				TileData(12,  false, true, false),
+				TileData(13,  false, true, false),
+				TileData(14,  false, true, false),
+				TileData(15,  false, true, false),
+				TileData(27,  false, true, false),
+				TileData(28,  false, true, false),
+				TileData(29,  false, true, false),
+				TileData(30,  false, true, false),
+				TileData(31,  false, true, false),
+				TileData(32,  false, true, false),
+
+				//Duck
+				TileData(32,  false, true, false),
+				TileData(33,  false, true, false),
+				TileData(34,  false, true, false),
+				TileData(35,  false, true, false),
+				TileData(36,  false, true, false),
+
+				TileData(48,  false, true, false),
+				TileData(49,  false, true, false),
+				TileData(50,  false, true, false),
+				TileData(51,  false, true, false),
+				TileData(52,  false, true, false),
+
+				TileData(64,  false, true, false),
+				TileData(65,  false, true, false),
+				TileData(66,  false, true, false),
+				TileData(67,  false, true, false),
+				TileData(68,  false, true, false),
+
+				TileData(80,  false, true, false),
+				TileData(81,  false, true, false),
+				TileData(82,  false, true, false),
+				TileData(83,  false, true, false),
+				TileData(84,  false, true, false),
+
+				TileData(96,  false, true, false),
+				TileData(97,  false, true, false),
+				TileData(98,  false, true, false),
+				TileData(99,  false, true, false),
+				TileData(100,  false, true, false)
+			});
 		break;
 	}
 
