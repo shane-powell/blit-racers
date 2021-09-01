@@ -1,4 +1,4 @@
-#include "calculations.hpp"
+#include "util.hpp"
 
 double CalculateDistance(blit::Point& pointA, blit::Point pointB)
 {
@@ -42,4 +42,30 @@ bool IsRectIntersecting(blit::Rect rect1, blit::Rect rect2) {
 		return true;
 	}
 	return false;
+}
+
+std::string GetLapTimeString(uint32_t lapTime)
+{
+	const uint32_t minutes = lapTime / 60000;
+	const uint32_t seconds = (lapTime % 60000) / 1000;
+	const uint32_t milliseconds = lapTime % 1000;
+
+	std::string secondString = std::to_string(seconds);
+
+	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
+
+	std::string millisecondString = std::to_string(milliseconds);
+
+	millisecondString.insert(millisecondString.begin(), 3 - millisecondString.size(), '0');
+
+
+	return std::to_string(minutes) + ":" + secondString + ":" + millisecondString;
+}
+
+double MapRange(float range1Min, float range1Max, float range1Value, float range2Min, float range2Max)
+{
+	const float slope = 1.0f * (range2Max - range2Min) / (range1Max - range1Min);
+	const auto output = range2Min + slope * (range1Value - range1Min);
+
+	return output;
 }

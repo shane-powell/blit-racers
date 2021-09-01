@@ -1,4 +1,11 @@
 #pragma once
+#include "32blit.hpp"
+
+enum TileScanType
+{
+	Collision,
+	Checkpoint
+};
 
 struct TileData
 {
@@ -24,3 +31,7 @@ struct TileScanData
 	TileScanData() = default;
 	//constexpr TileScanData(uint16_t areaSize) : areaSize(areaSize) {};
 };
+
+uint16_t getTileFromPoint(const blit::Point& point, uint8_t tile_size, uint8_t tile_map_width);
+
+TileScanData getLocalTileData(const blit::Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer, TileScanType scanType);

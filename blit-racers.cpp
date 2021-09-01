@@ -56,12 +56,6 @@ enum GameState {
 	LevelSelect
 };
 
-enum TileScanType
-{
-	Collision,
-	Checkpoint
-};
-
 GameState state = MainMenu;
 
 Surface* lightSprites = Surface::load(lights);
@@ -72,23 +66,6 @@ Surface* titleSprite = Surface::load(title);
 const uint32_t tilemap_width = 128;
 
 const uint32_t tilemap_height = 128;
-
-
-
-uint16_t getTileFromPoint(const Point& point, uint8_t tile_size, uint8_t tile_map_width) {
-	uint16_t horizontal_location = (point.x / tile_size) - 1;
-
-	uint16_t vertical_location = (point.y / tile_size) * tile_map_width;
-
-	// Possible crap code
-	if ((point.y / tile_size) % tile_size > 0) {
-		vertical_location += 1;
-	}
-
-	const uint16_t array_location = horizontal_location + vertical_location;
-
-	return array_location;
-}
 
 Game * game;
 
@@ -102,54 +79,12 @@ Point worldToScreen(Point point, Vec2 camera)
 		point.y - camera.y + screen.bounds.h / 2);
 }
 
-// todo replace point and sprite width/height with rect
-TileScanData getLocalTileData(const Rect& boundingBox, uint8_t tile_size, uint8_t tileMapWidth, uint8_t* mapLayer, TileScanType scanType) {
-	TileScanData tileScanData;
-	//TileScanData tileScanData(boundingBox.w * boundingBox.h);
-	tileScanData.areaSize = boundingBox.w * boundingBox.h;
-
-	for (auto y = 0; y < boundingBox.h; y++) {
-		for (auto x = 0; x < boundingBox.w; x++) {
-			auto pointToCheck = Point(boundingBox.x + x, boundingBox.y + y);
-
-			//tileScanData.pointsChecked.emplace_back(pointToCheck);
-
-			const auto array_location = getTileFromPoint(pointToCheck,
-				tile_size,
-				tileMapWidth);
-			const uint8_t tileScanned = *(mapLayer + array_location); //map1[array_location + tilemap_height * tilemap_width]; //map1[array_location];  //*(mapLayer + array_location); //mapLayer[array_location];
-
-			TileData tileData = TileData(tileScanned, array_location, pointToCheck);
-
-			if (auto it{ tileScanData.tilesScanned.find(tileData.id) }; it != std::end(tileScanData.tilesScanned))
-			{
-				it->second.detectionCount += 1;
-			}
-			else
-			{
-				
-				tileScanData.tilesScanned.emplace(tileData.id, tileData);
-			}
-		}
-	}
-
-	return tileScanData;
-}
-
 
 // Line-interrupt callback for level->draw that applies our camera transformation
 // This can be expanded to add effects like camera shake, wavy dream-like stuff, all the fun!
 std::function<Mat3(uint8_t)> level_line_interrupt_callback = [](uint8_t y) -> Mat3 {
 	return camera;
 };
-
-static double MapRange(float range1Min, float range1Max, float range1Value, float range2Min, float range2Max)
-{
-	const float slope = 1.0f * (range2Max - range2Min) / (range1Max - range1Min);
-	const auto output = range2Min + slope * (range1Value - range1Min);
-
-	return output;
-}
 
 void update_camera(Actor* car) {
 
@@ -228,24 +163,6 @@ void DrawAnimations()
 			screen.sprite(animation.at(0).spriteLocation, animation.at(0).drawLocation);
 		}
 	}
-}
-
-std::string GetLapTimeString(uint32_t lapTime)
-{
-	const uint32_t minutes = lapTime / 60000;
-	const uint32_t seconds = (lapTime % 60000) / 1000;
-	const uint32_t milliseconds = lapTime % 1000;
-
-	std::string secondString = std::to_string(seconds);
-
-	secondString.insert(secondString.begin(), 2 - secondString.size(), '0');
-
-	std::string millisecondString = std::to_string(milliseconds);
-
-	millisecondString.insert(millisecondString.begin(), 3 - millisecondString.size(), '0');
-
-
-	 return std::to_string(minutes) + ":" + secondString + ":" + millisecondString;
 }
 
 #define NUM_PALETTES 4
