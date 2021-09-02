@@ -72,7 +72,7 @@ Game * game;
 float worldY = 0; // Map height + 8 // 392
 float worldX = 0;
 
-Point worldToScreen(Point point, Vec2 camera)
+blit::Point worldToScreen(Point point, Vec2 camera)
 {
 	return Point(
 		point.x - camera.x + screen.bounds.w / 2,
