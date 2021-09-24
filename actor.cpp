@@ -33,13 +33,13 @@ void Actor::GenerateSpriteMap(float angle)
 
 void Actor::ProcessTileData(Track* currentTrack)
 {
-	for (auto const& tileType : this->currentTileData.tilesScanned) {
+	uint16_t fallCount = 0;
 
-		uint16_t fallCount = 0;
+	for (auto const& tileType : this->currentTileData.tilesScanned) {
 
 		for (auto const& trackTile : currentTrack->activeTiles)
 		{
-			if (tileType.first == trackTile.id)
+			if (tileType.first > 0 && tileType.first == trackTile.id)
 			{
 				if (trackTile.obstruction)
 				{
@@ -49,15 +49,21 @@ void Actor::ProcessTileData(Track* currentTrack)
 
 				if (trackTile.fall)
 				{
-					fallCount += trackTile.detectionCount;
+					fallCount += tileType.second.detectionCount;
 				}
+				break;
 			}
 		}
 
-		if (fallCount > this->currentTileData.areaSize * 0.75)
-		{
-			
-		}
+		
+	}
+
+	if (fallCount > this->currentTileData.areaSize * 0.75)
+	{
+		blit::Point checkPoint = this->getNextTargetCheckpoint(this->currentCheckpoint);
+
+		this->x = checkPoint.x;
+		this->y = checkPoint.y;
 	}
 }
 

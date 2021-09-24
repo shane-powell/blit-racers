@@ -48,22 +48,33 @@ Track* LoadTrack(uint8_t trackId)
 			},
 			blit::Size(24, 24), 
 			{
+				//tomato
 				TileData(36,  false, true, false),
-	TileData(37,  false, true, false),
-	TileData(38,  false, true, false),
-	TileData(39,  false, true, false),
-	TileData(52,  false, true, false),
-	TileData(53,  false, true, false),
-	TileData(54,  false, true, false),
-	TileData(55,  false, true, false),
-	TileData(68,  false, true, false),
-	TileData(69,  false, true, false),
-	TileData(70,  false, true, false),
-	TileData(71,  false, true, false),
-	TileData(84,  false, true, false),
-	TileData(85,  false, true, false),
-	TileData(86,  false, true, false),
-	TileData(87,  false, true, false)
+				TileData(37,  false, true, false),
+				TileData(38,  false, true, false),
+				TileData(39,  false, true, false),
+				TileData(52,  false, true, false),
+				TileData(53,  false, true, false),
+				TileData(54,  false, true, false),
+				TileData(55,  false, true, false),
+				TileData(68,  false, true, false),
+				TileData(69,  false, true, false),
+				TileData(70,  false, true, false),
+				TileData(71,  false, true, false),
+				TileData(84,  false, true, false),
+				TileData(85,  false, true, false),
+				TileData(86,  false, true, false),
+				TileData(87,  false, true, false),
+
+				//Floor
+				TileData(10,  false, false, true),
+				TileData(11,  false, false, true),
+				TileData(12,  false, false, true),
+				TileData(13,  false, false, true),
+				TileData(26,  false, false, true),
+				TileData(27,  false, false, true),
+				TileData(28,  false, false, true),
+				TileData(29,  false, false, true)
 			});
 	case 1:
 		return new Track(8, const_cast<uint8_t*>(map2), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <map>
 #include <utility>
-#include "animation-frame.hpp"
+#include "animation.hpp"
 #include "position.hpp"
 #include "track.hpp"
 #include "actor.hpp"

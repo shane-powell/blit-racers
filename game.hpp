@@ -1,6 +1,6 @@
 #pragma once
 #include "32blit.hpp"
-#include "animation-frame.hpp"
+#include "animation.hpp"
 #include "position.hpp"
 #include "track.hpp"
 #include "actor.hpp"
@@ -28,7 +28,7 @@ public:
 
 	bool raceStarted = false;
 
-	std::vector<std::vector<AnimationFrame>> animations;
+	std::vector<std::vector<Animation>> animations;
 
 	Game(int32_t maxX)
 	{
@@ -92,29 +92,29 @@ public:
 			}
 		}
 
-		std::vector<AnimationFrame> startLightOneFrames;
+		std::vector<Animation> startLightOneFrames;
 
 		blit::Point lightsStart = Point(maxX / 2 - 36, 0);
 
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), lightsStart, 100));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), lightsStart, 300, std::function([&]() {raceStarted = true; })));
-		startLightOneFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), lightsStart, 100));
+		startLightOneFrames.emplace_back(Animation(Rect(0, 0, 3, 3), lightsStart, 100));
+		startLightOneFrames.emplace_back(Animation(Rect(3, 0, 3, 3), lightsStart, 300,0,NULL, std::function([&]() {raceStarted = true; })));
+		startLightOneFrames.emplace_back(Animation(Rect(0, 3, 3, 3), lightsStart, 100));
 
 		animations.emplace_back(startLightOneFrames);
 
-		std::vector<AnimationFrame> startLightTwoFrames;
+		std::vector<Animation> startLightTwoFrames;
 
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
-		startLightTwoFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 24, 0), 100));
+		startLightTwoFrames.emplace_back(Animation(Rect(0, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
+		startLightTwoFrames.emplace_back(Animation(Rect(3, 0, 3, 3), Point(lightsStart.x + 24, 0), 200));
+		startLightTwoFrames.emplace_back(Animation(Rect(0, 3, 3, 3), Point(lightsStart.x + 24, 0), 100));
 
 		animations.emplace_back(startLightTwoFrames);
 
-		std::vector<AnimationFrame> startLightThreeFrames;
+		std::vector<Animation> startLightThreeFrames;
 
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 0, 3, 3), Point(lightsStart.x + 48, 0), 300));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(3, 0, 3, 3), Point(lightsStart.x + 48, 0), 100));
-		startLightThreeFrames.emplace_back(AnimationFrame(Rect(0, 3, 3, 3), Point(lightsStart.x + 48, 0), 100));
+		startLightThreeFrames.emplace_back(Animation(Rect(0, 0, 3, 3), Point(lightsStart.x + 48, 0), 300));
+		startLightThreeFrames.emplace_back(Animation(Rect(3, 0, 3, 3), Point(lightsStart.x + 48, 0), 100));
+		startLightThreeFrames.emplace_back(Animation(Rect(0, 3, 3, 3), Point(lightsStart.x + 48, 0), 100));
 
 		animations.emplace_back(startLightThreeFrames);
 
