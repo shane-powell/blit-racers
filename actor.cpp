@@ -62,7 +62,7 @@ void Actor::ProcessTileData(Track* currentTrack)
 	if (fallCount > this->currentTileData.areaSize * 0.75 && moveEnabled)
 	{
 		this->moveEnabled = false;
-		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 100, 5, std::function([&]() { 
+		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
 			Respawn();
 			}));
 	}

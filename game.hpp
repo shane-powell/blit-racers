@@ -97,7 +97,7 @@ public:
 		blit::Point lightsStart = Point(maxX / 2 - 36, 0);
 
 		startLightOneFrames.emplace_back(Animation(Rect(0, 0, 3, 3), lightsStart, 100));
-		startLightOneFrames.emplace_back(Animation(Rect(3, 0, 3, 3), lightsStart, 300,0, std::function([&]() {raceStarted = true; })));
+		startLightOneFrames.emplace_back(Animation(Rect(3, 0, 3, 3), lightsStart, 300, std::function([&]() {raceStarted = true; })));
 		startLightOneFrames.emplace_back(Animation(Rect(0, 3, 3, 3), lightsStart, 100));
 
 		animations.emplace_back(startLightOneFrames);

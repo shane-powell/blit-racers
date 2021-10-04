@@ -71,4 +71,34 @@ namespace util {
 
 		return output;
 	}
+
+	float Rotate(float angle, float rotationDegrees)
+	{
+		if (rotationDegrees > 0)
+		{
+
+			if (angle == 360.0f)
+			{
+				angle = rotationDegrees;
+			}
+			else
+			{
+				angle += rotationDegrees;
+			}
+		}
+		else if (rotationDegrees < 0)
+		{
+
+			if (angle == 0.0f)
+			{
+				angle = 360 + rotationDegrees;
+			}
+			else
+			{
+				angle += rotationDegrees;
+			}
+		}
+
+		return angle;
+	}
 }

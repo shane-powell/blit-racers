@@ -1,4 +1,5 @@
 #include "animation.hpp"
+#include "util.hpp"
 
 void Animation::Animate()
 {
@@ -18,7 +19,8 @@ void Animation::Animate()
             this->actor->degrees += this->rotation;
         }*/
 
-        //this->rotation += rotation;
+        this->rotation = util::Rotate(this->rotation, rotationIncrement);
+        this->scale += scaleIncrement;
 
         if (this->incrementSprite)
         {

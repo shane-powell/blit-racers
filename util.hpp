@@ -14,5 +14,7 @@ namespace util {
 	std::string GetLapTimeString(uint32_t lapTime);
 
 	double MapRange(float range1Min, float range1Max, float range1Value, float range2Min, float range2Max);
+
+	float Rotate(float angle, float rotationDegrees);
 }
 

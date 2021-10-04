@@ -205,6 +205,11 @@ void DrawCar(Actor* car)
 
 	auto sprite = car->degrees;
 
+	if (car->animation != nullptr && !car->animation->finished)
+	{
+		sprite = car->animation->rotation;
+	}
+
 	float remainder = fmod(sprite, spriteRotationalSegmentSize);
 
 	if (remainder > 0)
@@ -223,9 +228,9 @@ void DrawCar(Actor* car)
 		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
-	if (car->animation != nullptr)
+	if (car->animation != nullptr && !car->animation->finished)
 	{
-		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), Point(0,0), car->animation->scale);
 	}
 	else
 	{
@@ -464,7 +469,7 @@ void updateCar(Actor* car)
 		{
 			car->animation->Animate();
 
-			car->Rotate(car->animation->rotation);
+			//car->Rotate(car->animation->rotation);
 		}
 		else
 		{

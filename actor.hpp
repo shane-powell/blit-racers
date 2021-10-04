@@ -49,6 +49,8 @@ public:
 
 	Animation* animation = nullptr;
 
+	Vec2 scale = Vec2(1, 1);
+
 	Actor() = default;
 
 	Actor(float xIn, float yIn)
