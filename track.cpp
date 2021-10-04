@@ -35,16 +35,18 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(302, 536),
 				blit::Point(257,501),
 				blit::Point(262, 469)
-			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1), {
-				blit::Point(280, 448),
-				blit::Point(288, 304),
-				blit::Point(504, 320),
-				blit::Point(656, 280),
-				blit::Point(288, 304),
-				blit::Point(728, 424),
-				blit::Point(672, 536),
-				blit::Point(536, 536),
-				blit::Point(368, 544)
+			}, const_cast<uint8_t*>(map1_preview), "Kitchen", const_cast<uint8_t*>(car1),
+			// Checkpoint locations
+			{
+				Position(blit::Point(280, 448),180),
+				Position(blit::Point(288, 304),240),
+				Position(blit::Point(504, 320),270),
+				Position(blit::Point(656, 280),270),
+				Position(blit::Point(741, 417),360),
+				//Position(blit::Point(728, 424),90),
+				Position(blit::Point(672, 536),90),
+				Position(blit::Point(536, 536),90),
+				Position(blit::Point(368, 544),90)
 			},
 			blit::Size(24, 24), 
 			{
@@ -106,17 +108,19 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(302, 536),
 				blit::Point(257,501),
 				blit::Point(262, 469)
-			}, const_cast<uint8_t*>(map2_preview), "Bath tub", const_cast<uint8_t*>(boat1), {
-				blit::Point(280, 448),
-				blit::Point(288, 304),
-				blit::Point(504, 320),
-				blit::Point(656, 280),
-				blit::Point(288, 304),
-				blit::Point(728, 424),
-				blit::Point(672, 536),
-				blit::Point(536, 536),
-				blit::Point(368, 544)
-			}, blit::Size(16, 16), 
+			}, const_cast<uint8_t*>(map2_preview), "Bath tub", const_cast<uint8_t*>(boat1),
+			// Checkpoint locations
+			{
+				Position(blit::Point(280, 448),0),
+				Position(blit::Point(288, 304),0),
+				Position(blit::Point(504, 320),0),
+				Position(blit::Point(656, 280),0),
+				Position(blit::Point(288, 304),0),
+				Position(blit::Point(728, 424),0),
+				Position(blit::Point(672, 536),0),
+				Position(blit::Point(536, 536),0),
+				Position(blit::Point(368, 544),0)
+			}, blit::Size(16, 16),
 			{
 				//Bubbles
 				TileData(10,  false, true, false),

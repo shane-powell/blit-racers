@@ -67,7 +67,7 @@ public:
 
 		uint8_t gridPosition = 0;
 
-		std::function<Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Point&
+		std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint = std::function([&](uint8_t currentCheckpoint) -> Position&
 			{
 				if (currentCheckpoint < this->currentTrack->checkPointLocations.size())
 				{
@@ -97,7 +97,7 @@ public:
 		blit::Point lightsStart = Point(maxX / 2 - 36, 0);
 
 		startLightOneFrames.emplace_back(Animation(Rect(0, 0, 3, 3), lightsStart, 100));
-		startLightOneFrames.emplace_back(Animation(Rect(3, 0, 3, 3), lightsStart, 300,0,NULL, std::function([&]() {raceStarted = true; })));
+		startLightOneFrames.emplace_back(Animation(Rect(3, 0, 3, 3), lightsStart, 300,0, std::function([&]() {raceStarted = true; })));
 		startLightOneFrames.emplace_back(Animation(Rect(0, 3, 3, 3), lightsStart, 100));
 
 		animations.emplace_back(startLightOneFrames);

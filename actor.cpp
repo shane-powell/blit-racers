@@ -1,4 +1,5 @@
 #include "actor.hpp"
+#include "animation.hpp"
 
 void Actor::GenerateSpriteMap(float angle)
 {
@@ -58,12 +59,57 @@ void Actor::ProcessTileData(Track* currentTrack)
 		
 	}
 
-	if (fallCount > this->currentTileData.areaSize * 0.75)
+	if (fallCount > this->currentTileData.areaSize * 0.75 && moveEnabled)
 	{
-		blit::Point checkPoint = this->getNextTargetCheckpoint(this->currentCheckpoint);
+		this->moveEnabled = false;
+		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 100, 5, std::function([&]() { 
+			Respawn();
+			}));
+	}
+}
 
-		this->x = checkPoint.x;
-		this->y = checkPoint.y;
+blit::Point Actor::GetPosition()
+{
+	return blit::Point(this->x, this->y);
+}
+
+void Actor::Respawn()
+{
+	auto checkPoint = this->getNextTargetCheckpoint(this->currentCheckpoint);
+
+	this->x = checkPoint.location.x;
+	this->y = checkPoint.location.y;
+
+	this->degrees = checkPoint.angle;
+
+	this->moveEnabled = true;
+}
+
+void Actor::Rotate(float rotation)
+{
+	if (rotation > 0)
+	{
+
+		if (this->degrees == 360.0f)
+		{
+			this->degrees = rotation;
+		}
+		else
+		{
+			this->degrees += rotation;
+		}
+	}
+	else if (rotation < 0)
+	{
+
+		if (this->degrees == 0.0f)
+		{
+			this->degrees = 360 + rotation;
+		}
+		else
+		{
+			this->degrees += rotation;
+		}
 	}
 }
 
@@ -98,9 +144,9 @@ bool Actor::SortByPosition(const Actor* carA, const Actor* carB) {
 
 		if (carA->currentCheckpoint == carB->currentCheckpoint)
 		{
-			auto distanceA = (int)util::CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint), blit::Point(carA->x, carA->y));
+			auto distanceA = (int)util::CalculateDistance(carA->getNextTargetCheckpoint(carA->currentCheckpoint).location, blit::Point(carA->x, carA->y));
 
-			auto distanceB = (int)util::CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint), blit::Point(carB->x, carB->y));
+			auto distanceB = (int)util::CalculateDistance(carB->getNextTargetCheckpoint(carB->currentCheckpoint).location, blit::Point(carB->x, carB->y));
 
 			if (distanceA < distanceB)
 			{

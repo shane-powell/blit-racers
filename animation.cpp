@@ -13,10 +13,12 @@ void Animation::Animate()
     }
     else
     {
-        if (this->actor != NULL)
+        /*if (this->actor != NULL)
         {
             this->actor->degrees += this->rotation;
-        }
+        }*/
+
+        //this->rotation += rotation;
 
         if (this->incrementSprite)
         {
@@ -25,4 +27,9 @@ void Animation::Animate()
 
         frameCount++;
     }
+}
+
+Animation::~Animation()
+{
+    
 }

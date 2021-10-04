@@ -26,7 +26,7 @@ public:
 	// todo split linked list for multiple paths
 	std::vector<blit::Point> nodes;
 
-	std::vector<blit::Point> checkPointLocations;
+	std::vector<Position> checkPointLocations;
 
 	std::vector<TileData> activeTiles;
 
@@ -44,7 +44,7 @@ public:
 		uint8_t* image,
 		std::string title,
 		const uint8_t* carSpriteSheet,
-		std::vector<blit::Point> checkPointLocations,
+		std::vector<Position> checkPointLocations,
 		blit::Size vehicleSize,
 		std::vector<TileData> activeTiles,
 		uint8_t laps = 3)

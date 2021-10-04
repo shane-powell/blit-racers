@@ -4,7 +4,7 @@
 enum TileScanType
 {
 	Collision,
-	Checkpoint
+	CheckpointScan
 };
 
 struct TileData

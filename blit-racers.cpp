@@ -223,9 +223,16 @@ void DrawCar(Actor* car)
 		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
-
+	if (car->animation != nullptr)
+	{
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
+	}
+	else
+	{
 		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
 		//screen.text(std::to_string(car->position), outline_font, worldToScreen(Point(car->x + car->size.w, car->y), game->PlayerCar->camera));
+	}
+
 
 }
 
@@ -451,6 +458,20 @@ void ApplyCarMovement(float radian, blit::Vec2 newVector, Actor* car)
 
 void updateCar(Actor* car)
 {
+	if (car->animation != nullptr)
+	{
+		if(!car->animation->finished)
+		{
+			car->animation->Animate();
+
+			car->Rotate(car->animation->rotation);
+		}
+		else
+		{
+			//delete car->animation;
+		}
+	}
+
 	car->lapTime += 10;
 
 	if (car->inputDelay > 0)
@@ -549,30 +570,19 @@ void updateCar(Actor* car)
 
 		if (car->inputDelay == 0)
 		{
-			if (right) {
-				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+			float rotation = 0;
 
-				if (car->degrees == 360.0f)
-				{
-					car->degrees = rotationIncrement;
-				}
-				else
-				{
-					car->degrees += rotationIncrement;
-				}
+			if (right) {
+				rotation = rotationIncrement;
+				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 			}
 			else if (left) {
 				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
-				if (car->degrees == 0.0f)
-				{
-					car->degrees = 360 - rotationIncrement;
-				}
-				else
-				{
-					car->degrees -= rotationIncrement;
-				}
+				rotation = rotationIncrement * -1;
 			}
+
+			car->Rotate(rotation);
 		}
 
 		float radian = (pi * car->degrees) / 180.00f;
@@ -598,7 +608,7 @@ void updateCar(Actor* car)
 
 		ApplyCarMovement(radian, newVector, car);
 
-		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack->checkpointLayer->tiles, Checkpoint);
+		auto checkPointScan = getLocalTileData(Rect(car->x - (car->size.w / 2), car->y - (car->size.h / 2), car->size.w, car->size.h), tileSize, tilemap_width, game->currentTrack->checkpointLayer->tiles, CheckpointScan);
 
 		for (auto tiles_scanned : checkPointScan.tilesScanned)
 		{

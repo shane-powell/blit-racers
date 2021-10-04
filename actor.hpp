@@ -3,6 +3,7 @@
 #include "tiledata.hpp"
 #include "util.hpp"
 #include "track.hpp"
+#include "animation.hpp"
 
 class Actor {
 public:
@@ -44,7 +45,9 @@ public:
 
 	bool sorted = false;
 
-	std::function<blit::Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
+	std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
+
+	Animation* animation = nullptr;
 
 	Actor() = default;
 
@@ -57,7 +60,7 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position gridPosition, blit::Rect spriteLocation, blit::Size size, uint8_t targetNode, uint8_t carNumber, std::function<blit::Point& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
+	Actor(Position gridPosition, blit::Rect spriteLocation, blit::Size size, uint8_t targetNode, uint8_t carNumber, std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
 	{
 		this->SetLocation(gridPosition);
 		this->spriteLocation = spriteLocation;
@@ -75,6 +78,12 @@ public:
 	void ProcessTileData(Track* currentTrack);
 
 	void SetLocation(Position gridPosition);
+
+	void Respawn();
+
+	blit::Point GetPosition();
+
+	void Rotate(float rotation);
 
 	static bool SortByPosition(const Actor* carA, const Actor* carB);
 };
