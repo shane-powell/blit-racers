@@ -5,7 +5,7 @@ void Animation::Animate()
 {
     if (frameCount >= frameLength)
     {
-        if (callback != NULL)
+        if (callback != nullptr)
         {
             callback();
         }
@@ -14,7 +14,7 @@ void Animation::Animate()
     }
     else
     {
-        /*if (this->actor != NULL)
+        /*if (this->actor != nullptr)
         {
             this->actor->degrees += this->rotation;
         }*/

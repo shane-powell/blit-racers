@@ -290,8 +290,8 @@ void DrawGame()
 
 
 		//screen.text("d " + std::to_string(game->cpuCars[0]->degrees), minimal_font, Point(0, 30));
-		//screen.text("X: " + std::to_string(int(game->cpuCars[0]->x)), minimal_font, Point(0, 40));
-		//screen.text("Y: " + std::to_string(int(game->cpuCars[0]->y)), minimal_font, Point(0, 50));
+		screen.text("X: " + std::to_string(int(game->PlayerCar->x)), minimal_font, Point(0, 40));
+		screen.text("Y: " + std::to_string(int(game->PlayerCar->y)), minimal_font, Point(0, 50));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->PlayerCar->targetNode].x), minimal_font, Point(0, 60));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->PlayerCar->targetNode].y), minimal_font, Point(0, 70));
 		//screen.text(std::to_string(game->currentTrack->nodes[game->cpuCars[0]->targetNode].x), minimal_font, Point(0, 60));
@@ -302,7 +302,7 @@ void DrawGame()
 		{
 			if (!car->isPlayer)
 			{
-				screen.line(worldToScreen(Point(static_cast<int>(game->cars[0]->x + game->cars[0]->size.w / 2), static_cast<int>(game->cars[0]->y + game->cars[0]->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[game->cars[0]->targetNode], game->PlayerCar->camera));
+				screen.line(worldToScreen(Point(static_cast<int>(car->x + car->size.w / 2), static_cast<int>(car->y + car->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[car->targetNode], game->PlayerCar->camera));
 				
 				screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), car->size));
 

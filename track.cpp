@@ -7,13 +7,14 @@ Track* LoadTrack(uint8_t trackId)
 	{
 	case 0:
 		return new Track(8, const_cast<uint8_t*>(map1), 128, 128, const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1), const_cast<uint8_t*>(tile_sheet_1),
+			// Start locations
 			{
 				Position(blit::Point(270,480),180),
 				Position(blit::Point(305,480),180),
 				Position(blit::Point(270,520),180),
 				Position(blit::Point(310,520),180)
-			}
-			,
+			},
+			// Nodes
 			{
 				blit::Point(270, 440),
 				blit::Point(270, 412),
@@ -80,13 +81,14 @@ Track* LoadTrack(uint8_t trackId)
 			});
 	case 1:
 		return new Track(8, const_cast<uint8_t*>(map2), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
+			// Start locations
 			{
 				Position(blit::Point(270,480),180),
 				Position(blit::Point(305,480),180),
 				Position(blit::Point(270,520),180),
 				Position(blit::Point(310,520),180)
-			}
-			,
+			},
+			// Nodes
 			{
 				blit::Point(270, 440),
 				blit::Point(270, 412),

@@ -13,7 +13,7 @@ public:
     uint32_t frameLength = 1;
     int16_t rotation = 0;
     int16_t rotationIncrement = 0;
-    //Actor* actor = NULL;
+    //Actor* actor = nullptr;
     bool incrementSprite = false;
 
     blit::Vec2 scale = Vec2 (1,1);
@@ -23,8 +23,8 @@ public:
 
     bool finished = false;
 
-    Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength,  //Actor* actor = NULL, 
-        std::function<void()> callback = NULL)
+    Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength,  //Actor* actor = nullptr, 
+        std::function<void()> callback = nullptr)
     {
         this->spriteLocation = spriteLocation;
         this->drawLocation = drawLocation;
@@ -37,7 +37,7 @@ public:
     }
 
     Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength, int16_t rotation, Vec2 scale, int16_t rotationIncrement = 0, Vec2 scaleIncrement = Vec2(0, 0), //Actor* actor = NULL, 
-        std::function<void()> callback = NULL)
+        std::function<void()> callback = nullptr)
     {
         this->spriteLocation = spriteLocation;
         this->drawLocation = drawLocation;
