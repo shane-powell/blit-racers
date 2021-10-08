@@ -11,9 +11,9 @@ A = Accelerate
 X = Debug mode
 Y = Restart game
 
-Dapd / Thumbstick = Steering
+Dpad / Thumbstick = Steering
 
-Dpad Up/Down & X = Spectacte / cycle players
+Dpad Up/Down & X = Spectate / cycle players
 
 ## Changelog
 
