@@ -14,3 +14,9 @@ blit_assets_yaml (blit-racers assets.yml)
 blit_metadata (blit-racers metadata.yml)
 
 target_compile_definitions(blit-racers PRIVATE ALLOW_HIRES=0)
+
+# setup release packages
+install (FILES ${PROJECT_DISTRIBS} DESTINATION .)
+set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+set (CPACK_GENERATOR "ZIP" "TGZ")
+include (CPack)
