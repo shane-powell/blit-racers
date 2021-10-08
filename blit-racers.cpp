@@ -230,11 +230,11 @@ void DrawCar(Actor* car)
 
 	if (car->animation != nullptr && !car->animation->finished)
 	{
-		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), Point(0,0), car->animation->scale);
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->ActiveCar->camera), Point(0,0), car->animation->scale);
 	}
 	else
 	{
-		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->PlayerCar->camera));
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->ActiveCar->camera));
 		//screen.text(std::to_string(car->position), outline_font, worldToScreen(Point(car->x + car->size.w, car->y), game->PlayerCar->camera));
 	}
 
@@ -256,7 +256,11 @@ void DrawGame()
 
 	//screen.text(std::to_string(game->PlayerCar->position), minimal_font, Point(0, 0));
 
-	
+	if (!game->ActiveCar->isPlayer) {
+		screen.pen = blit::Pen(255, 0, 0);
+		screen.text("Spectating AI:  " + std::to_string(game->ActiveCar->carNumber), minimal_font, blit::Point(maxX / 4, 0), blit::top_center);
+	}
+
 
 	if(debugMode)
 	{
@@ -266,11 +270,11 @@ void DrawGame()
 
 		backgroundSize.w = 45;
 
-		screen.pen = Pen(0, 0, 0, 128);
-		screen.rectangle(Rect(Point(0, 0), backgroundSize));
+		screen.pen = blit::Pen(0, 0, 0, 128);
+		screen.rectangle(blit::Rect(blit::Point(0, 0), backgroundSize));
 
-		screen.pen = Pen(255, 0, 0);
-		screen.text(curLapText, minimal_font, Point(0, 0));
+		screen.pen = blit::Pen(255, 0, 0);
+		screen.text(curLapText, minimal_font, blit::Point(0, 0));
 		uint32_t lapNumber = 1;
 
 		for (auto completed_lap_time : game->PlayerCar->completedLapTimes)
@@ -302,20 +306,23 @@ void DrawGame()
 		{
 			if (!car->isPlayer)
 			{
-				screen.line(worldToScreen(Point(static_cast<int>(car->x + car->size.w / 2), static_cast<int>(car->y + car->size.h / 2)), game->PlayerCar->camera), worldToScreen(game->currentTrack->nodes[car->targetNode], game->PlayerCar->camera));
+				screen.line(worldToScreen(Point(static_cast<int>(car->x + car->size.w / 2), static_cast<int>(car->y + car->size.h / 2)), game->ActiveCar->camera), worldToScreen(game->currentTrack->nodes[car->targetNode], game->ActiveCar->camera));
 				
-				screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), car->size));
-
+				screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->ActiveCar->camera), car->size));
 			}
 
 			screen.pen = blit::Pen(0, 255, 0, 50);
 
-			screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->PlayerCar->camera), car->size));
+			screen.rectangle(Rect(worldToScreen(Point(car->x, car->y), game->ActiveCar->camera), car->size));
 		}
 
+		auto i = 0;
 		for (auto node : game->currentTrack->nodes)
 		{
-			screen.pixel(worldToScreen(node, game->PlayerCar->camera));
+			i++;
+			screen.pen = blit::Pen(255, 0, 0);
+			screen.pixel(worldToScreen(node, game->ActiveCar->camera));
+			screen.text(std::to_string(i), minimal_font, worldToScreen(node, game->ActiveCar->camera));
 		}
 
 		//std::string ids;
@@ -721,7 +728,39 @@ void update(uint32_t time) {
 	case Play:
 		if(buttons & Button::X && buttonBounceTimer <= 0)
 		{
-			debugMode = !debugMode;
+			if (buttons & Button::DPAD_UP)
+			{
+				if (game->activeCarId > 0)
+				{
+					game->activeCarId--;
+				}
+				else
+				{
+					game->activeCarId = game->cars.size() - 1;
+				}
+
+				game->ActiveCar = game->cars[game->activeCarId];
+
+			}
+			else if (buttons & Button::DPAD_DOWN)
+			{
+				if (game->activeCarId < game->cars.size() - 1)
+				{
+					game->activeCarId++;
+				}
+				else
+				{
+					game->activeCarId = 0;
+				}
+
+				game->ActiveCar = game->cars[game->activeCarId];
+
+			}
+			else
+			{
+				debugMode = !debugMode;
+			}
+
 			buttonBounceTimer = 20;
 		}
 
@@ -733,11 +772,11 @@ void update(uint32_t time) {
 
 		if (game->raceStarted)
 		{
-			std::sort(game->cars.begin(), game->cars.end(), Actor::SortByPosition);
+			std::sort(game->carPositions.begin(), game->carPositions.end(), Actor::SortByPosition);
 
 			uint8_t position = 1;
 
-			for (auto car : game->cars)
+			for (auto car : game->carPositions)
 			{
 				car->position = position;
 				updateCar(car);
@@ -747,7 +786,7 @@ void update(uint32_t time) {
 
 		game->UpdateAnimations();
 
-		update_camera(game->PlayerCar);
+		update_camera(game->ActiveCar);
 		break;
 	case GameOver:
 		if (buttons & Button::A && buttonBounceTimer <= 0)

@@ -17,8 +17,12 @@ public:
 	Track* currentTrack;
 
 	std::vector<Actor*> cars;
+	std::vector<Actor*> carPositions;
 
 	Actor* PlayerCar;
+
+	Actor* ActiveCar;
+	uint8_t activeCarId = 0;
 
 	uint8_t aiCount = 3;
 
@@ -78,16 +82,20 @@ public:
 			});
 
 		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, true);
+		ActiveCar = PlayerCar;
 		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
 
 		cars.emplace_back(PlayerCar);
+		carPositions.emplace_back(PlayerCar);
 
 		for (int i = 0; i < aiCount; ++i)
 		{
 			if (currentTrack->startLocations.size() >= gridPosition + 1)
 			{
-				cars.emplace_back(new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint));
+				auto aiCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint);
+				cars.emplace_back(aiCar);
+				carPositions.emplace_back(aiCar);
 				gridPosition++;
 			}
 		}
