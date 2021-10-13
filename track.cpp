@@ -91,21 +91,21 @@ Track* LoadTrack(uint8_t trackId)
 			// Nodes
 			{
 				blit::Point(270, 440),
-				blit::Point(301, 364),
-				blit::Point(363, 370),
-				blit::Point(411, 384),
-				blit::Point(410,789),
-				blit::Point(451, 849),
-				blit::Point(517, 842),
-				blit::Point(555, 806),
-				blit::Point(555, 286),
-				blit::Point(600, 248),
-				blit::Point(651, 244),
-				blit::Point(700, 275),
-				blit::Point(700, 807),
-				blit::Point(738,853),
-				blit::Point(797, 861),
-				blit::Point(844, 801),
+				blit::Point(253, 247),
+				blit::Point(448, 174),
+				blit::Point(715, 182),
+				blit::Point(822,261),
+				blit::Point(818, 763),
+				blit::Point(670, 797),
+				blit::Point(660, 578),
+				blit::Point(625, 313),
+				blit::Point(516, 286),
+				blit::Point(446, 424),
+				blit::Point(441, 628),
+				blit::Point(417, 816),
+				blit::Point(199,766),
+				blit::Point(218, 574)
+				/*blit::Point(844, 801),
 				blit::Point(843, 202),
 				blit::Point(799, 157),
 				blit::Point(199, 155),
@@ -117,7 +117,7 @@ Track* LoadTrack(uint8_t trackId)
 				blit::Point(151, 856),
 				blit::Point(192, 882),
 				blit::Point(237, 871),
-				blit::Point(276, 796)
+				blit::Point(276, 796)*/
 			}, const_cast<uint8_t*>(map2_preview), "Bath tub", const_cast<uint8_t*>(boat1),
 			// Checkpoint locations
 			{
@@ -145,6 +145,10 @@ Track* LoadTrack(uint8_t trackId)
 				TileData(30,  false, true, false),
 				TileData(31,  false, true, false),
 				TileData(32,  false, true, false),
+				TileData(46,  false, true, false),
+				TileData(47,  false, true, false),
+				TileData(62,  false, true, false),
+				TileData(63,  false, true, false),
 
 				//Duck
 				TileData(32,  false, true, false),
