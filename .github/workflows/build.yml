@@ -45,7 +45,7 @@ jobs:
             cmake-prefix: emcmake
             apt-packages: python3-setuptools
 
-          - os: macos-latest
+          - os: macOS-10.15
             name: macOS
             release-suffix: MACOS
             cmake-args: -D32BLIT_DIR=$GITHUB_WORKSPACE/32blit-sdk
