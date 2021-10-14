@@ -15,10 +15,13 @@ struct TileData
 	bool water = false;
 	bool fall = false;
 	bool obstruction = false;
+	bool jump = false;
 	blit::Point detectionLocation;
 
 	constexpr TileData(uint8_t id, uint16_t index, blit::Point detectionLocation) : id(id), index(index), detectionLocation(detectionLocation) {}
 	constexpr TileData(uint8_t id, bool water, bool obstruction, bool fall) : id(id), water(water), obstruction(obstruction), fall(fall) {}
+
+	constexpr TileData(uint8_t id, bool water, bool obstruction, bool fall, bool jump) : id(id), water(water), obstruction(obstruction), fall(fall), jump(jump) {}
 };
 
 struct TileScanData

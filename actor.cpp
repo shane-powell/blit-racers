@@ -35,6 +35,7 @@ void Actor::GenerateSpriteMap(float angle)
 void Actor::ProcessTileData(Track* currentTrack)
 {
 	uint16_t fallCount = 0;
+	uint16_t jumpCount = 0;
 
 	for (auto const& tileType : this->currentTileData.tilesScanned) {
 
@@ -52,6 +53,10 @@ void Actor::ProcessTileData(Track* currentTrack)
 				{
 					fallCount += tileType.second.detectionCount;
 				}
+				if (trackTile.jump)
+				{
+					jumpCount += tileType.second.detectionCount;
+				}
 				break;
 			}
 		}
@@ -59,11 +64,32 @@ void Actor::ProcessTileData(Track* currentTrack)
 		
 	}
 
-	if (fallCount > this->currentTileData.areaSize * 0.75 && moveEnabled)
+	auto detectionTrigger = this->currentTileData.areaSize * 0.75;
+
+	if (fallCount > detectionTrigger && moveEnabled)
 	{
 		this->moveEnabled = false;
 		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
 			Respawn();
+			delete animation;
+			}));
+	}
+	else if (jumpCount > detectionTrigger && moveEnabled)
+	{
+		this->moveEnabled = false;
+
+		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, this->scale, 0, Vec2(0.01, 0.01), std::function([&]() {
+
+			blit::Vec2 animationScale = animation->scale;
+			auto oldAnimation = animation;
+			
+
+			animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
+				this->moveEnabled = true;
+				delete animation;
+				}));
+
+			delete oldAnimation;
 			}));
 	}
 }

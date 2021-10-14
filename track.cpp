@@ -179,7 +179,41 @@ Track* LoadTrack(uint8_t trackId)
 				TileData(97,  false, true, false),
 				TileData(98,  false, true, false),
 				TileData(99,  false, true, false),
-				TileData(100,  false, true, false)
+				TileData(100,  false, true, false),
+
+				//Soap
+				TileData(201,  false, false, false, true),
+				TileData(202,  false, false, false, true),
+				TileData(203,  false, false, false, true),
+				TileData(204,  false, false, false, true),
+				TileData(205,  false, false, false, true),
+				TileData(205,  false, false, false, true),
+				TileData(207,  false, false, false, true),
+
+				TileData(217,  false, false, false, true),
+				TileData(218,  false, false, false, true),
+				TileData(219,  false, false, false, true),
+				TileData(220,  false, false, false, true),
+				TileData(221,  false, false, false, true),
+				TileData(222,  false, false, false, true),
+				TileData(223,  false, false, false, true),
+
+				TileData(233,  false, false, false, true),
+				TileData(234,  false, false, false, true),
+				TileData(235,  false, false, false, true),
+				TileData(236,  false, false, false, true),
+				TileData(237,  false, false, false, true),
+				TileData(238,  false, false, false, true),
+				TileData(239,  false, false, false, true),
+
+				TileData(249,  false, false, false, true),
+				TileData(250,  false, false, false, true),
+				TileData(251,  false, false, false, true),
+				TileData(252,  false, false, false, true),
+				TileData(253,  false, false, false, true),
+				TileData(254,  false, false, false, true),
+				TileData(255,  false, false, false, true)
+
 			});
 		break;
 	}
