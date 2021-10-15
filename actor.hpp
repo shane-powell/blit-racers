@@ -17,6 +17,7 @@ public:
 	std::map<float, blit::Rect> sprites;
 	uint8_t inputDelay = 0;
 	bool moveEnabled = true;
+	bool lockSpeed = false;
 	const uint8_t STEERINGDELAYMIN = 3;
 	const uint8_t STEERINGDELAYMAX = 5;
 

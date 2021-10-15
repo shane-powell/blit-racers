@@ -576,7 +576,10 @@ void updateCar(Actor* car)
 		}
 		else if (car->speedMultiplier > 0 && !accelerate)
 		{
-			car->speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+			if (!car->lockSpeed)
+			{
+				car->speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+			}
 			car->speedMultiplier = std::max(0.0f, car->speedMultiplier);
 		}
 
