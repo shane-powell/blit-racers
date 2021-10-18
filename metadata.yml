@@ -5,6 +5,6 @@ splash:
   file: assets/title.png
 icon:
   file: icon.png
-version: v0.9.1
+version: v0.9.2
 category: game # game, demo, utility, ...
 url: https://github.com/shane-powell/blit-racers

@@ -71,7 +71,7 @@ void Actor::ProcessTileData(Track* currentTrack)
 		this->moveEnabled = false;
 		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
 			Respawn();
-			delete animation;
+			//delete animation;
 			}));
 	}
 	else if (jumpCount > detectionTrigger && moveEnabled)
@@ -87,10 +87,10 @@ void Actor::ProcessTileData(Track* currentTrack)
 			animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
 				this->moveEnabled = true;
 				this->lockSpeed = false;
-				delete animation;
+				//delete animation;
 				}));
 
-			delete oldAnimation;
+			//delete oldAnimation;
 			}));
 	}
 }
