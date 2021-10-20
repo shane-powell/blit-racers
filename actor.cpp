@@ -69,29 +69,42 @@ void Actor::ProcessTileData(Track* currentTrack)
 	if (fallCount > detectionTrigger && moveEnabled)
 	{
 		this->moveEnabled = false;
-		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
+
+		animationQueue.push(new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() {
 			Respawn();
-			//delete animation;
-			}));
+			})));
+
+		//animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
+		//	Respawn();
+		//	//delete animation;
+		//	}));
 	}
 	else if (jumpCount > detectionTrigger && moveEnabled)
 	{
 		this->moveEnabled = false;
 		this->lockSpeed = true;
-		animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, this->scale, 0, Vec2(0.01, 0.01), std::function([&]() {
+		
+		animationQueue.push(new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, this->scale, 0, Vec2(0.01, 0.01)));
+		animationQueue.push(new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationQueue.front()->finalScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
+			this->moveEnabled = true;
+			this->lockSpeed = false;
+			//delete animation;
+			})));
 
-			blit::Vec2 animationScale = animation->scale;
-			auto oldAnimation = animation;
-			
+		//animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, this->scale, 0, Vec2(0.01, 0.01), std::function([&]() {
 
-			animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
-				this->moveEnabled = true;
-				this->lockSpeed = false;
-				//delete animation;
-				}));
+		//	blit::Vec2 animationScale = animation->scale;
+		//	auto oldAnimation = animation;
 
-			//delete oldAnimation;
-			}));
+
+		//	animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
+		//		this->moveEnabled = true;
+		//		this->lockSpeed = false;
+		//		//delete animation;
+		//		}));
+
+		//	//delete oldAnimation;
+		//	}));
 	}
 }
 
@@ -211,5 +224,36 @@ bool Actor::SortByPosition(const Actor* carA, const Actor* carB) {
 	else
 	{
 		return false;
+	}*/
+}
+
+void Actor::Animate()
+{
+	if (!animationQueue.empty()) // animationQueue.front() != nullptr
+	{
+		if (animationQueue.front()->finished)
+		{
+			auto animationToRemove = animationQueue.front();
+			animationQueue.pop();
+			delete animationToRemove;
+
+			this->Animate();
+		}
+		else
+		{
+			animationQueue.front()->Animate();
+		}
+	}
+
+	/*if (this->animation != nullptr)
+	{
+		if (!this->animation->finished)
+		{
+			this->animation->Animate();
+
+		}
+		else
+		{
+		}
 	}*/
 }

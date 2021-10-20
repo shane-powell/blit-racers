@@ -17,6 +17,7 @@ public:
     bool incrementSprite = false;
 
     blit::Vec2 scale = Vec2 (1,1);
+    blit::Vec2 finalScale = Vec2(1, 1);
     Vec2 scaleIncrement = Vec2(0, 0);
 
     std::function<void()> callback;
@@ -49,6 +50,12 @@ public:
         this->scale = scale;
         this->scaleIncrement = scaleIncrement;
 
+       /* for (int i = 0; i < frameLength; i++)
+        {
+            finalScale += scaleIncrement;
+        }*/
+
+        finalScale = scale += (scaleIncrement * frameLength);
     }
 
     void Animate();

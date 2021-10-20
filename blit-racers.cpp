@@ -205,9 +205,9 @@ void DrawCar(Actor* car)
 
 	auto sprite = car->degrees;
 
-	if (car->animation != nullptr && !car->animation->finished)
+	if (!car->animationQueue.empty() && !car->animationQueue.front()->finished)
 	{
-		sprite = car->animation->rotation;
+		sprite = car->animationQueue.front()->rotation;
 	}
 
 	float remainder = fmod(sprite, spriteRotationalSegmentSize);
@@ -228,9 +228,9 @@ void DrawCar(Actor* car)
 		screen.sprites->palette[1 + x] = alternate_palettes[car->carNumber][x];
 	}
 
-	if (car->animation != nullptr && !car->animation->finished)
+	if (!car->animationQueue.empty() && !car->animationQueue.front()->finished)
 	{
-		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->ActiveCar->camera), Point(0,0), car->animation->scale);
+		screen.sprite(car->sprites[sprite], worldToScreen(Point(car->x, car->y), game->ActiveCar->camera), Point(0,0), car->animationQueue.front()->scale);
 	}
 	else
 	{
@@ -470,19 +470,7 @@ void ApplyCarMovement(float radian, blit::Vec2 newVector, Actor* car)
 
 void updateCar(Actor* car)
 {
-	if (car->animation != nullptr)
-	{
-		if(!car->animation->finished)
-		{
-			car->animation->Animate();
-
-			//car->Rotate(car->animation->rotation);
-		}
-		else
-		{
-			//delete car->animation;
-		}
-	}
+	car->Animate();
 
 	car->lapTime += 10;
 

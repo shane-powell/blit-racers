@@ -48,7 +48,8 @@ public:
 
 	std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
 
-	Animation* animation = nullptr;
+	//Animation* animation = nullptr;
+	std::queue<Animation*> animationQueue;
 
 	Vec2 scale = Vec2(1, 1);
 
@@ -83,6 +84,8 @@ public:
 	void SetLocation(Position gridPosition);
 
 	void Respawn();
+
+	void Animate();
 
 	blit::Point GetPosition();
 
