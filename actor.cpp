@@ -73,11 +73,6 @@ void Actor::ProcessTileData(Track* currentTrack)
 		animationQueue.push(new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() {
 			Respawn();
 			})));
-
-		//animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 300, this->degrees, this->scale, 5, Vec2(-0.006, -0.006), std::function([&]() { 
-		//	Respawn();
-		//	//delete animation;
-		//	}));
 	}
 	else if (jumpCount > detectionTrigger && moveEnabled)
 	{
@@ -90,21 +85,6 @@ void Actor::ProcessTileData(Track* currentTrack)
 			this->lockSpeed = false;
 			//delete animation;
 			})));
-
-		//animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, this->scale, 0, Vec2(0.01, 0.01), std::function([&]() {
-
-		//	blit::Vec2 animationScale = animation->scale;
-		//	auto oldAnimation = animation;
-
-
-		//	animation = new Animation(blit::Rect(this->GetPosition(), this->size), this->GetPosition(), 50, this->degrees, animationScale, 0, Vec2(-0.01, -0.01), std::function([&]() {
-		//		this->moveEnabled = true;
-		//		this->lockSpeed = false;
-		//		//delete animation;
-		//		}));
-
-		//	//delete oldAnimation;
-		//	}));
 	}
 }
 
@@ -229,7 +209,7 @@ bool Actor::SortByPosition(const Actor* carA, const Actor* carB) {
 
 void Actor::Animate()
 {
-	if (!animationQueue.empty()) // animationQueue.front() != nullptr
+	if (!animationQueue.empty())
 	{
 		if (animationQueue.front()->finished)
 		{
@@ -244,16 +224,4 @@ void Actor::Animate()
 			animationQueue.front()->Animate();
 		}
 	}
-
-	/*if (this->animation != nullptr)
-	{
-		if (!this->animation->finished)
-		{
-			this->animation->Animate();
-
-		}
-		else
-		{
-		}
-	}*/
 }
