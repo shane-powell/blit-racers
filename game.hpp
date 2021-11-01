@@ -81,7 +81,7 @@ public:
 				return this->currentTrack->checkPointLocations[0];
 			});
 
-		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, true);
+		PlayerCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, this->currentTrack->vehicleType, true);
 		ActiveCar = PlayerCar;
 		gridPosition++;
 		PlayerCar->camera = Vec2(PlayerCar->x + (PlayerCar->size.w / 2), PlayerCar->y + (PlayerCar->size.h / 2));
@@ -93,7 +93,7 @@ public:
 		{
 			if (currentTrack->startLocations.size() >= gridPosition + 1)
 			{
-				auto aiCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint);
+				auto aiCar = new Actor(currentTrack->startLocations[gridPosition], Rect(0, 0, this->currentTrack->vehicleSize.w / 8, this->currentTrack->vehicleSize.h / 8), this->currentTrack->vehicleSize, 0, gridPosition, getNextTargetCheckpoint, this->currentTrack->vehicleType);
 				cars.emplace_back(aiCar);
 				carPositions.emplace_back(aiCar);
 				gridPosition++;

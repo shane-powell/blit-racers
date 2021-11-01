@@ -1,5 +1,6 @@
 #include "track.hpp"
 #include "tiledata.hpp"
+using namespace util;
 
 Track* LoadTrack(uint8_t trackId)
 {
@@ -78,7 +79,7 @@ Track* LoadTrack(uint8_t trackId)
 				TileData(27,  false, false, true),
 				TileData(28,  false, false, true),
 				TileData(29,  false, false, true)
-			});
+			}, Vehicle::car);
 	case 1:
 		return new Track(8, const_cast<uint8_t*>(map2), 128, 128, const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2), const_cast<uint8_t*>(tile_sheet_2),
 			// Start locations
@@ -214,7 +215,7 @@ Track* LoadTrack(uint8_t trackId)
 				TileData(254,  false, false, false, true),
 				TileData(255,  false, false, false, true)
 
-			});
+			}, Vehicle::boat);
 		break;
 	}
 

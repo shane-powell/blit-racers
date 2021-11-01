@@ -50,8 +50,11 @@ public:
 
 	//Animation* animation = nullptr;
 	std::queue<Animation*> animationQueue;
+	std::vector<Animation*> effects;
 
 	Vec2 scale = Vec2(1, 1);
+
+	util::Vehicle vehicleType;
 
 	Actor() = default;
 
@@ -64,7 +67,7 @@ public:
 		this->GenerateSpriteMap(180);
 	}
 
-	Actor(Position gridPosition, blit::Rect spriteLocation, blit::Size size, uint8_t targetNode, uint8_t carNumber, std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, bool isPlayer = false)
+	Actor(Position gridPosition, blit::Rect spriteLocation, blit::Size size, uint8_t targetNode, uint8_t carNumber, std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint, util::Vehicle vehicleType, bool isPlayer = false)
 	{
 		this->SetLocation(gridPosition);
 		this->spriteLocation = spriteLocation;
@@ -75,6 +78,7 @@ public:
 		this->GenerateSpriteMap(180);
 		this->carNumber = carNumber;
 		this->getNextTargetCheckpoint = getNextTargetCheckpoint;
+		this->vehicleType = vehicleType;
 	}
 
 	void GenerateSpriteMap(float angle);

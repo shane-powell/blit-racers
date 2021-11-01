@@ -86,6 +86,12 @@ void Actor::ProcessTileData(Track* currentTrack)
 			//delete animation;
 			})));
 	}
+
+	if (animationQueue.empty() && effects.empty() && vehicleType == util::Vehicle::boat)
+	{
+		// todo effect rotation
+		//effects.emplace_back(new Animation(blit::Rect(blit::Point(0, 9), blit::Size(2,1)), this->GetPosition(), 2,2));
+	}
 }
 
 blit::Point Actor::GetPosition()
@@ -222,6 +228,20 @@ void Actor::Animate()
 		else
 		{
 			animationQueue.front()->Animate();
+		}
+	}
+
+	if (!this->effects.empty())
+	{
+		if (this->effects[0]->finished)
+		{
+			auto animationToRemove = effects[0];
+			effects.clear();
+			delete animationToRemove;
+		}
+		else
+		{
+			this->effects[0]->Animate();
 		}
 	}
 }

@@ -14,21 +14,26 @@ void Animation::Animate()
     }
     else
     {
-        /*if (this->actor != nullptr)
-        {
-            this->actor->degrees += this->rotation;
-        }*/
 
-        this->rotation = util::Rotate(this->rotation, rotationIncrement);
-        this->scale += scaleIncrement;
 
-        if (this->incrementSprite)
-        {
-            this->spriteLocation.x += 1;
-        }
+       /* if (frameCount % this->drawEveryXFrame == 0)
+        {*/
+            this->rotation = util::Rotate(this->rotation, rotationIncrement);
+            this->scale += scaleIncrement;
+
+            if (this->incrementSprite)
+            {
+                this->spriteLocation.x += 1;
+            }
+       // }
 
         frameCount++;
     }
+}
+
+bool Animation::Draw()
+{
+    return this->frameCount % this->drawEveryXFrame == 0;
 }
 
 Animation::~Animation()

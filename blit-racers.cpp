@@ -238,6 +238,13 @@ void DrawCar(Actor* car)
 		//screen.text(std::to_string(car->position), outline_font, worldToScreen(Point(car->x + car->size.w, car->y), game->PlayerCar->camera));
 	}
 
+	if (!car->effects.empty())
+	{
+		if (car->effects[0]->Draw())
+		{
+			screen.sprite(car->effects[0]->spriteLocation, worldToScreen(Point(car->x, car->y), game->ActiveCar->camera));
+		}
+	}
 
 }
 

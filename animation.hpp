@@ -24,41 +24,46 @@ public:
 
     bool finished = false;
 
-    Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength,  //Actor* actor = nullptr, 
+    uint8_t drawEveryXFrame = 1;
+
+    Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength,
         std::function<void()> callback = nullptr)
     {
-        this->spriteLocation = spriteLocation;
-        this->drawLocation = drawLocation;
-        this->frameLength = frameLength;
-        this->callback = callback;
-        //this->actor = actor;
-        this->rotation = rotation;
-        this->rotationIncrement = rotationIncrement;
+        SetCoreProperties(spriteLocation, drawLocation, frameLength, callback);
+    }
+
+    Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength, uint8_t drawEveryXFrame,
+        std::function<void()> callback = nullptr)
+    {
+        SetCoreProperties(spriteLocation, drawLocation, frameLength, callback);
+        this->drawEveryXFrame = drawEveryXFrame;
 
     }
 
     Animation(blit::Rect spriteLocation, blit::Point drawLocation, uint32_t frameLength, int16_t rotation, Vec2 scale, int16_t rotationIncrement = 0, Vec2 scaleIncrement = Vec2(0, 0), //Actor* actor = NULL, 
         std::function<void()> callback = nullptr)
     {
-        this->spriteLocation = spriteLocation;
-        this->drawLocation = drawLocation;
-        this->frameLength = frameLength;
-        this->callback = callback;
-        //this->actor = actor;
+        SetCoreProperties(spriteLocation, drawLocation, frameLength, callback);
+
         this->rotation = rotation;
         this->rotationIncrement = rotationIncrement;
+
         this->scale = scale;
         this->scaleIncrement = scaleIncrement;
-
-       /* for (int i = 0; i < frameLength; i++)
-        {
-            finalScale += scaleIncrement;
-        }*/
-
         finalScale = scale += (scaleIncrement * frameLength);
     }
 
+    void SetCoreProperties(const blit::Rect& spriteLocation, const blit::Point& drawLocation, const uint32_t& frameLength, std::function<void()>& callback)
+    {
+        this->spriteLocation = spriteLocation;
+        this->drawLocation = drawLocation;
+        this->frameLength = frameLength;
+        this->callback = callback;       
+    }
+
     void Animate();
+
+    bool Draw();
 
     ~Animation();
 };

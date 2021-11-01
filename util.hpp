@@ -3,6 +3,12 @@
 #include <32blit.hpp>
 
 namespace util {
+
+	enum Vehicle {
+		car = 0,
+		boat = 1
+	};
+
 	double CalculateDistance(blit::Point& pointA, blit::Point pointB);
 
 	blit::Vec2 DegreesToVector(float degrees);
