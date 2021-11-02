@@ -1,3 +1,4 @@
+#include "..\32blit-sdk\32blit-sdl\UserCode.hpp"
 #include "blit-racers.hpp"
 #include "assets.hpp"
 #include <limits>
@@ -53,10 +54,11 @@ enum GameState {
 	MainMenu,
 	Play,
 	GameOver,
-	LevelSelect
+	LevelSelect,
+	DifficultySelect
 };
 
-GameState state = MainMenu;
+GameState state = GameState::MainMenu;
 
 Surface* lightSprites = Surface::load(lights);
 
@@ -138,6 +140,39 @@ void DrawLevelSelect()
 #endif
 
 	screen.text(game->currentTrack->title, outline_font, Point(maxX / 2, minY + 90), true, center_h);
+
+}
+
+void SetPenBasedOnDifficulty(Difficulty difficulty)
+{
+	if (game->difficulty == difficulty)
+	{
+		screen.pen = Pen(255, 255, 0, 255);
+	}
+	else
+	{
+		screen.pen = Pen(255, 255, 255, 255);
+	}
+}
+
+void DrawDifficultySelect()
+{
+	screen.pen = Pen(255, 255, 255, 255);
+	screen.text("Select a difficulty", outline_font, Point(maxX / 2, minY + 10), true, center_h);
+	screen.sprites = game->currentTrack->image;
+
+#ifdef DISPLAY_ST7789
+#else
+#endif
+
+	SetPenBasedOnDifficulty(Difficulty::Easy);
+	screen.text("EASY", minimal_font, Point(maxX / 2, minY + 30), true, center_h);
+
+	SetPenBasedOnDifficulty(Difficulty::Medium);
+	screen.text("MEDIUM", minimal_font, Point(maxX / 2, minY + 50), true, center_h);
+
+	SetPenBasedOnDifficulty(Difficulty::Hard);
+	screen.text("HARD", minimal_font, Point(maxX / 2, minY + 70), true, center_h);
 
 }
 
@@ -418,6 +453,9 @@ void render(uint32_t time) {
 	case LevelSelect:
 		DrawLevelSelect();
 		break;
+	case DifficultySelect:
+		DrawDifficultySelect();
+		break;
 	case Play:
 		DrawGame();
 		break;
@@ -649,6 +687,164 @@ void updateCar(Actor* car)
 }
 
 
+void UpdateMainMenu()
+{
+	if (buttons & Button::A && buttonBounceTimer <= 0)
+	{
+		delete game;
+
+		game = new Game(maxX);
+		state = DifficultySelect;
+		buttonBounceTimer = 20;
+	}
+}
+
+void UpdateLevelSelect()
+{
+	if (buttons & Button::A && buttonBounceTimer <= 0)
+	{
+		game->initRace();
+		state = Play;
+	}
+	else if ((buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0) || joystick.x > 0)
+	{
+		buttonBounceTimer = 20;
+		if (game->currentTrackId >= TrackCount - 1)
+		{
+			game->currentTrackId--;
+		}
+		else
+		{
+			game->currentTrackId = TrackCount - 1;
+		}
+
+		game->ChangeCurrentTrack();
+	}
+	else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
+	{
+		buttonBounceTimer = 20;
+		if (game->currentTrackId < TrackCount - 1)
+		{
+			game->currentTrackId++;
+		}
+		else
+		{
+			game->currentTrackId = 0;
+		}
+
+		game->ChangeCurrentTrack();
+	}
+}
+
+void UpdateDifficultySelect()
+{
+	if (buttons & Button::A && buttonBounceTimer <= 0)
+	{
+		state = LevelSelect;
+		buttonBounceTimer = 50;
+	}
+	else if ((buttons & Button::DPAD_DOWN && buttonBounceTimer <= 0) || joystick.y > 0)
+	{
+		buttonBounceTimer = 20;
+
+		if (game->difficulty < Difficulty::Hard)
+		{
+			game->difficulty = (Difficulty) (int)(game->difficulty + 1);
+		}
+		else
+		{
+			game->difficulty = Difficulty::Easy;
+		}
+	}
+	else if ((buttons & Button::DPAD_UP && buttonBounceTimer <= 0) || joystick.y < 0)
+	{
+		buttonBounceTimer = 20;
+
+		if (game->difficulty > Difficulty::Easy)
+		{
+			game->difficulty = (Difficulty)(int)(game->difficulty - 1);
+		}
+		else
+		{
+			game->difficulty = Difficulty::Hard;
+		}
+	}
+}
+
+void UpdateGame()
+{
+	if (buttons & Button::X && buttonBounceTimer <= 0)
+	{
+		if (buttons & Button::DPAD_UP)
+		{
+			if (game->activeCarId > 0)
+			{
+				game->activeCarId--;
+			}
+			else
+			{
+				game->activeCarId = game->cars.size() - 1;
+			}
+
+			game->ActiveCar = game->cars[game->activeCarId];
+
+		}
+		else if (buttons & Button::DPAD_DOWN)
+		{
+			if (game->activeCarId < game->cars.size() - 1)
+			{
+				game->activeCarId++;
+			}
+			else
+			{
+				game->activeCarId = 0;
+			}
+
+			game->ActiveCar = game->cars[game->activeCarId];
+
+		}
+		else
+		{
+			debugMode = !debugMode;
+		}
+
+		buttonBounceTimer = 20;
+	}
+
+	if (buttons & Button::Y && buttonBounceTimer <= 0)
+	{
+		state = MainMenu;
+		buttonBounceTimer = 20;
+	}
+
+	if (game->raceStarted)
+	{
+		std::sort(game->carPositions.begin(), game->carPositions.end(), Actor::SortByPosition);
+
+		uint8_t position = 1;
+
+		for (auto car : game->carPositions)
+		{
+			car->position = position;
+			updateCar(car);
+			position++;
+		}
+	}
+
+	game->UpdateAnimations();
+
+	update_camera(game->ActiveCar);
+}
+
+void UpdateGameOver()
+{
+	if (buttons & Button::A && buttonBounceTimer <= 0)
+	{
+		state = MainMenu;
+		buttonBounceTimer = 20;
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // update(time)
@@ -679,119 +875,19 @@ void update(uint32_t time) {
 	switch (state)
 	{
 	case MainMenu:
-		if (buttons & Button::A && buttonBounceTimer <= 0)
-		{
-			delete game;
-
-			game = new Game(maxX);
-			state = LevelSelect;
-			buttonBounceTimer = 20;
-		}
+		UpdateMainMenu();
 		break;
 	case LevelSelect:
-		if (buttons & Button::A && buttonBounceTimer <= 0)
-		{
-			game->initRace();
-			state = Play;
-		}
-		else if ((buttons & Button::DPAD_LEFT && buttonBounceTimer <= 0) || joystick.x > 0)
-		{
-			buttonBounceTimer = 20;
-			if (game->currentTrackId >= TrackCount - 1)
-			{
-				game->currentTrackId--;
-			}
-			else
-			{
-				game->currentTrackId = TrackCount - 1;
-			}
-
-			game->ChangeCurrentTrack();
-		}
-		else if ((buttons & Button::DPAD_RIGHT && buttonBounceTimer <= 0) || joystick.x < 0)
-		{
-			buttonBounceTimer = 20;
-			if (game->currentTrackId < TrackCount - 1)
-			{
-				game->currentTrackId++;
-			}
-			else
-			{
-				game->currentTrackId = 0;
-			}
-
-			game->ChangeCurrentTrack();
-		}
+		UpdateLevelSelect();
+		break;
+	case GameState::DifficultySelect:
+		UpdateDifficultySelect();
 		break;
 	case Play:
-		if(buttons & Button::X && buttonBounceTimer <= 0)
-		{
-			if (buttons & Button::DPAD_UP)
-			{
-				if (game->activeCarId > 0)
-				{
-					game->activeCarId--;
-				}
-				else
-				{
-					game->activeCarId = game->cars.size() - 1;
-				}
-
-				game->ActiveCar = game->cars[game->activeCarId];
-
-			}
-			else if (buttons & Button::DPAD_DOWN)
-			{
-				if (game->activeCarId < game->cars.size() - 1)
-				{
-					game->activeCarId++;
-				}
-				else
-				{
-					game->activeCarId = 0;
-				}
-
-				game->ActiveCar = game->cars[game->activeCarId];
-
-			}
-			else
-			{
-				debugMode = !debugMode;
-			}
-
-			buttonBounceTimer = 20;
-		}
-
-		if (buttons & Button::Y && buttonBounceTimer <= 0)
-		{
-			state = MainMenu;
-			buttonBounceTimer = 20;
-		}
-
-		if (game->raceStarted)
-		{
-			std::sort(game->carPositions.begin(), game->carPositions.end(), Actor::SortByPosition);
-
-			uint8_t position = 1;
-
-			for (auto car : game->carPositions)
-			{
-				car->position = position;
-				updateCar(car);
-				position++;
-			}
-		}
-
-		game->UpdateAnimations();
-
-		update_camera(game->ActiveCar);
+		UpdateGame();
 		break;
 	case GameOver:
-		if (buttons & Button::A && buttonBounceTimer <= 0)
-		{
-			state = MainMenu;
-			buttonBounceTimer = 20;
-		}
+		UpdateGameOver();
 		break;
 	}
 

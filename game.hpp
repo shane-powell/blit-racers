@@ -5,6 +5,12 @@
 #include "track.hpp"
 #include "actor.hpp"
 
+enum Difficulty {
+	Easy,
+	Medium,
+	Hard
+};
+
 class Game
 {
 public:
@@ -33,6 +39,8 @@ public:
 	bool raceStarted = false;
 
 	std::vector<std::vector<Animation>> animations;
+
+	Difficulty difficulty = Difficulty::Medium;
 
 	Game(int32_t maxX)
 	{
