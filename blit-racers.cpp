@@ -1,4 +1,3 @@
-#include "..\32blit-sdk\32blit-sdl\UserCode.hpp"
 #include "blit-racers.hpp"
 #include "assets.hpp"
 #include <limits>
@@ -22,9 +21,6 @@ int32_t rowHeight = 40;
 
 Mat3 camera;
 
-float maxSpeed = 2.0f;
-float acceleration = 0.01f;
-float slowdown = 0.02f;
 float rotationIncrement = 5;
 float spriteRotationalSegmentSize = 15.0f;
 float friction = 0.1f;
@@ -602,16 +598,16 @@ void updateCar(Actor* car)
 
 			}
 		}
-		if (accelerate && car->speedMultiplier < maxSpeed)
+		if (accelerate && car->speedMultiplier < car->maxSpeed)
 		{
-			car->speedMultiplier += acceleration;
-			car->speedMultiplier = std::min(maxSpeed, car->speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
+			car->speedMultiplier += car->acceleration;
+			car->speedMultiplier = std::min(car->maxSpeed, car->speedMultiplier);  // NOLINT(clang-diagnostic-implicit-float-conversion)
 		}
 		else if (car->speedMultiplier > 0 && !accelerate)
 		{
 			if (!car->lockSpeed)
 			{
-				car->speedMultiplier -= slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
+				car->speedMultiplier -= car->slowdown;  // NOLINT(clang-diagnostic-implicit-float-conversion)
 			}
 			car->speedMultiplier = std::max(0.0f, car->speedMultiplier);
 		}
@@ -622,10 +618,10 @@ void updateCar(Actor* car)
 
 			if (right) {
 				rotation = rotationIncrement;
-				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+				car->inputDelay = round(util::MapRange(0, car->maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 			}
 			else if (left) {
-				car->inputDelay = round(util::MapRange(0, maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
+				car->inputDelay = round(util::MapRange(0, car->maxSpeed, car->speedMultiplier, car->STEERINGDELAYMIN, car->STEERINGDELAYMAX));
 
 				rotation = rotationIncrement * -1;
 			}

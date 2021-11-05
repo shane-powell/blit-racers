@@ -44,6 +44,10 @@ public:
 
 	uint8_t position = 0;
 
+	float maxSpeed = 2.0f;
+	float acceleration = 0.01f;
+	float slowdown = 0.02f;
+
 	bool sorted = false;
 
 	std::function<Position& (uint8_t currentCheckpoint)> getNextTargetCheckpoint;
